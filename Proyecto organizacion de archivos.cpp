@@ -36,6 +36,9 @@ int main() {
     fflush(stdin);
 
     int opcion1, opcion2, opcion3;
+
+    string objetivo;
+
     char c[] = "123";
     char intento[20];
 
@@ -54,11 +57,12 @@ int main() {
         switch (opcion1) {
             case 1: {
                 while (opcion2 != 5) {
+                    objetivo = "accesorio";
                     system("cls");
-                    cout << "1. Agregar accesorio" << endl;
-                    cout << "2. Eliminar accesorio" << endl;
-                    cout << "3. Modificar accesorio" << endl;
-                    cout << "4. Buscar accesorio" << endl;
+                    cout << "1. Agregar " + objetivo << endl;
+                    cout << "2. Eliminar " + objetivo << endl;
+                    cout << "3. Modificar " + objetivo << endl;
+                    cout << "4. Buscar " + objetivo << endl;
                     cout << "5. Regresar" << endl;
                     opcion2 = pedirEntero("Digite su opción: ");
                     switch (opcion2) {
@@ -89,11 +93,12 @@ int main() {
             }
             case 2: {
                 while (opcion2 != 5) {
+                    objetivo = "proveedor";
                     system("cls");
-                    cout << "1. Agregar proveedor" << endl;
-                    cout << "2. Eliminar proveedor" << endl;
-                    cout << "3. Modificar proveedor" << endl;
-                    cout << "4. Buscar proveedor" << endl;
+                    cout << "1. Agregar " + objetivo << endl;
+                    cout << "2. Eliminar " + objetivo << endl;
+                    cout << "3. Modificar " + objetivo << endl;
+                    cout << "4. Buscar " + objetivo << endl;
                     cout << "5. Regresar" << endl;
                     opcion2 = pedirEntero("Digite su opción: ");
                     switch (opcion2) {
@@ -124,11 +129,12 @@ int main() {
             }
             case 3: {
                 while (opcion2 != 5) {
+                    objetivo = "vendedor";
                     system("cls");
-                    cout << "1. Agregar vendedor" << endl;
-                    cout << "2. Eliminar vendedor" << endl;
-                    cout << "3. Modificar vendedor" << endl;
-                    cout << "4. Buscar vendedor" << endl;
+                    cout << "1. Agregar " + objetivo << endl;
+                    cout << "2. Eliminar " + objetivo << endl;
+                    cout << "3. Modificar " + objetivo << endl;
+                    cout << "4. Buscar " + objetivo << endl;
                     cout << "5. Regresar" << endl;
                     opcion2 = pedirEntero("Digite su opción: ");
                     switch (opcion2) {
