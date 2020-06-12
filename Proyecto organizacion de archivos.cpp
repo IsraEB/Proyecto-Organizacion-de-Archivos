@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-int sleepT = 200;
+int sleepT = 100;
 
 using namespace std;
 
@@ -17,7 +17,6 @@ void continuar() {
     cout << "Presione cualquier tecla para continuar\n";
     fflush(stdin);
     getch();
-
     Sleep(sleepT);
 }
 
@@ -43,13 +42,15 @@ int escucharTecla(int nOpciones) {
     while (true) {
         for (int i = 0; i < nOpciones; i++) {
             if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
-                Sleep(sleepT);
+                while ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                }
                 return i + 1;
             }
         }
         for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
             if (GetKeyState(i) & 0x8000) {
-                Sleep(sleepT);
+                while (GetKeyState(i) & 0x8000) {
+                }
                 return i - 48;
             }
         }
