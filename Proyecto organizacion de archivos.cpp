@@ -8,17 +8,24 @@
 #include <iostream>
 #include <string>
 
+int sleepT = 100;
+
 using namespace std;
 
 void continuar() {
-    cout << "Presione una tecla para continuar\n";
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    cout << "Presione cualquier tecla para continuar\n";
+    fflush(stdin);
     getch();
+
+    Sleep(sleepT);
 }
 
 int pedirEntero(string peticion) {
     string str;
     cout << peticion;
 
+    fflush(stdin);
     cin >> str;
     fflush(stdin);
 
@@ -28,6 +35,42 @@ int pedirEntero(string peticion) {
     catch (...) {
         cout << "Intentemoslo de nuevo" << endl;
         return pedirEntero(peticion);
+    }
+}
+
+int escucharTecla(int nOpciones) {
+    char letras[] = {'U', 'N', 'E', 'I', 'F', 'A', 'Y', 'S'};
+    if (nOpciones >= 8) {
+        while (true) {
+            for (int i = 0; i < 8; i++) {
+                if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                    Sleep(sleepT);
+                    return i + 1;
+                }
+            }
+            for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
+                if (GetKeyState(i) & 0x8000) {
+                    Sleep(sleepT);
+                    return i - 48;
+                }
+            }
+        }
+    }
+    else {
+        while (true) {
+            for (int i = 0; i < nOpciones; i++) {
+                if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                    Sleep(sleepT);
+                    return i + 1;
+                }
+            }
+            for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
+                if (GetKeyState(i) & 0x8000) {
+                    Sleep(sleepT);
+                    return i - 48;
+                }
+            }
+        }
     }
 }
 
@@ -42,6 +85,8 @@ int main() {
     char c[] = "123";
     char intento[20];
 
+    bool con = true;
+
     while (opcion1 != 8) {
         system("cls");
         cout << "1. Accesorios" << endl;
@@ -52,7 +97,8 @@ int main() {
         cout << "6. Administración" << endl;
         cout << "7. Ayuda" << endl;
         cout << "8. Salir" << endl;
-        opcion1 = pedirEntero("Digite su opción: ");
+        cout << "Presione su opción: " << endl;
+        opcion1 = escucharTecla(8);
         opcion2 = 0;
         switch (opcion1) {
             case 1: {
@@ -61,10 +107,11 @@ int main() {
                     system("cls");
                     cout << "1. Agregar " + objetivo << endl;
                     cout << "2. Eliminar " + objetivo << endl;
-                    cout << "3. Modificar " + objetivo << endl;
+                    cout << "3. Modificar " << endl;
                     cout << "4. Buscar " + objetivo << endl;
                     cout << "5. Regresar" << endl;
-                    opcion2 = pedirEntero("Digite su opción: ");
+                    cout << "Presione su opción: " << endl;
+                    opcion2 = escucharTecla(5);
                     switch (opcion2) {
                         case 1: {
                             break;
@@ -97,10 +144,11 @@ int main() {
                     system("cls");
                     cout << "1. Agregar " + objetivo << endl;
                     cout << "2. Eliminar " + objetivo << endl;
-                    cout << "3. Modificar " + objetivo << endl;
+                    cout << "3. Modificar " << endl;
                     cout << "4. Buscar " + objetivo << endl;
                     cout << "5. Regresar" << endl;
-                    opcion2 = pedirEntero("Digite su opción: ");
+                    cout << "Presione su opción: " << endl;
+                    opcion2 = escucharTecla(5);
                     switch (opcion2) {
                         case 1: {
                             break;
@@ -133,10 +181,11 @@ int main() {
                     system("cls");
                     cout << "1. Agregar " + objetivo << endl;
                     cout << "2. Eliminar " + objetivo << endl;
-                    cout << "3. Modificar " + objetivo << endl;
+                    cout << "3. Modificar " << endl;
                     cout << "4. Buscar " + objetivo << endl;
                     cout << "5. Regresar" << endl;
-                    opcion2 = pedirEntero("Digite su opción: ");
+                    cout << "Presione su opción: " << endl;
+                    opcion2 = escucharTecla(5);
                     switch (opcion2) {
                         case 1: {
                             break;
@@ -173,7 +222,8 @@ int main() {
                     cout << "2. Reporte de ventas" << endl;
                     cout << "3. Reporte de proveedores" << endl;
                     cout << "4. Regresar" << endl;
-                    opcion2 = pedirEntero("Digite su opción: ");
+                    cout << "Presione su opción: " << endl;
+                    opcion2 = escucharTecla(4);
                     opcion3 = 0;
                     switch (opcion2) {
                         case 1: {
@@ -182,7 +232,8 @@ int main() {
                                 cout << "1. Reporte impreso en pantalla" << endl;
                                 cout << "2. Reporte en archivo de texto" << endl;
                                 cout << "3. Regresar" << endl;
-                                opcion3 = pedirEntero("Digite su opción: ");
+                                cout << "Presione su opción: " << endl;
+                                opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
                                         break;
@@ -209,7 +260,8 @@ int main() {
                                 cout << "1. Reporte impreso en pantalla" << endl;
                                 cout << "2. Reporte en archivo de texto" << endl;
                                 cout << "3. Regresar" << endl;
-                                opcion3 = pedirEntero("Digite su opción: ");
+                                cout << "Presione su opción: " << endl;
+                                opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
                                         break;
@@ -236,7 +288,8 @@ int main() {
                                 cout << "1. Reporte impreso en pantalla" << endl;
                                 cout << "2. Reporte en archivo de texto" << endl;
                                 cout << "3. Regresar" << endl;
-                                opcion3 = pedirEntero("Digite su opción: ");
+                                cout << "Presione su opción: " << endl;
+                                opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
                                         break;
@@ -270,12 +323,13 @@ int main() {
                     }
                 }
                 break;
-                break;
             }
 
             case 6: {
+                FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
                 system("cls");
                 bool hayCaracterIncorrecto = false;
+                fflush(stdin);
                 cout << "Digite la contraseña: ";
                 fflush(stdin);
                 gets(intento);
@@ -292,7 +346,7 @@ int main() {
                         cout << "3. Restaurar" << endl;
                         cout << "4. Compactar archivos" << endl;
                         cout << "5. Regresar" << endl;
-                        opcion2 = pedirEntero("Digite su opción: ");
+                        opcion2 = escucharTecla(5);
                         switch (opcion2) {
                             case 1: {
                                 break;
