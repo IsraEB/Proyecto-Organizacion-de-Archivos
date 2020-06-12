@@ -8,7 +8,7 @@
 #include <iostream>
 #include <string>
 
-int sleepT = 100;
+int sleepT = 200;
 
 using namespace std;
 
