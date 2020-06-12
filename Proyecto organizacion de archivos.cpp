@@ -40,35 +40,17 @@ int pedirEntero(string peticion) {
 
 int escucharTecla(int nOpciones) {
     char letras[] = {'U', 'N', 'E', 'I', 'F', 'A', 'Y', 'S'};
-    if (nOpciones >= 8) {
-        while (true) {
-            for (int i = 0; i < 8; i++) {
-                if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
-                    Sleep(sleepT);
-                    return i + 1;
-                }
-            }
-            for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
-                if (GetKeyState(i) & 0x8000) {
-                    Sleep(sleepT);
-                    return i - 48;
-                }
+    while (true) {
+        for (int i = 0; i < nOpciones; i++) {
+            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                Sleep(sleepT);
+                return i + 1;
             }
         }
-    }
-    else {
-        while (true) {
-            for (int i = 0; i < nOpciones; i++) {
-                if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
-                    Sleep(sleepT);
-                    return i + 1;
-                }
-            }
-            for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
-                if (GetKeyState(i) & 0x8000) {
-                    Sleep(sleepT);
-                    return i - 48;
-                }
+        for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
+            if (GetKeyState(i) & 0x8000) {
+                Sleep(sleepT);
+                return i - 48;
             }
         }
     }
@@ -394,6 +376,5 @@ int main() {
             }
         }
     }
-    getch();
     return 0;
 }
