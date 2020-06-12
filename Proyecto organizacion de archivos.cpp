@@ -12,12 +12,30 @@ int sleepT = 100;
 
 using namespace std;
 
+// void continuar() {
+//     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+//     cout << "Presione cualquier tecla para continuar\n";
+//     fflush(stdin);
+//     getch();
+//     Sleep(sleepT);
+// }
+
+void escucharEspacio() {
+    bool con = true;
+    while (con) {
+        if (GetKeyState(' ') & 0x8000) {
+            while (GetKeyState(' ') & 0x8000) {
+            }
+            con = false;
+        }
+    }
+}
+
 void continuar() {
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-    cout << "Presione cualquier tecla para continuar\n";
+    cout << "Presione espacio para continuar\n";
     fflush(stdin);
-    getch();
-    Sleep(sleepT);
+    escucharEspacio();
 }
 
 int pedirEntero(string peticion) {
