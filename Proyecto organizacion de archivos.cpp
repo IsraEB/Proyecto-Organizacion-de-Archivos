@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #include <ctime>
+#include <iomanip>
 #include <iostream>
 #include <string>
 
@@ -96,7 +97,24 @@ int pedirEntero(string peticion) {
         return stoi(str);
     }
     catch (...) {
-        cout << "Intentemoslo de nuevo" << endl;
+        cout << "Debe ingresar un entero!" << endl;
+        return pedirEntero(peticion);
+    }
+}
+
+float pedirFlotante(string peticion) {
+    string str;
+    cout << peticion;
+
+    fflush(stdin);
+    cin >> str;
+    fflush(stdin);
+
+    try {
+        return stof(str);
+    }
+    catch (...) {
+        cout << "Debe ingresar un flotante!" << endl;
         return pedirEntero(peticion);
     }
 }
@@ -143,6 +161,12 @@ struct node {
     struct node *next;
 };
 typedef struct node *Tlist;
+
+typedef struct {
+    char clave[20];
+    char nombre[20];
+    unsigned long long telefono;
+} Proveedor;
 
 /************
  * Hash
@@ -259,7 +283,7 @@ void altaProducto() {
     while (!codigoValido) {
         printf("Ingrese el codigo del producto: ");
         fflush(stdin);
-        gets(producto.codigo);
+        cin.getline(producto.codigo, 7, '\n');
         codigoValido = validarCodigo(producto.codigo);
         if (!codigoValido) {
             cout << "Usted ingreso un codigo invalido!!!" << endl;
@@ -283,17 +307,49 @@ void altaProducto() {
     cout << "Ingrese el proveedor del producto: ";
     cin.getline(producto.proveedor, 20, '\n');
 
+    FILE *arch;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    string cod = producto.proveedor;
+    Proveedor proveedor;
+    int existe = 0;
+    fread(&proveedor, sizeof(Proveedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == proveedor.clave) {
+            printf("%s : ", proveedor.clave);
+            printf("%s : ", proveedor.nombre);
+            cout << proveedor.telefono << endl;
+
+            existe = 1;
+            break;
+        }
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+    }
+    if (existe == 0) {
+        printf("No existe un proveedor con dicha clave\n");
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+
+    fclose(arch);
+
     fflush(stdin);
     cout << "Ingrese el precio al que se compró el producto: ";
-    cin >> producto.costoComprado;
+    producto.costoComprado = pedirFlotante("");
 
     fflush(stdin);
     cout << "Ingrese el precio al que se vende el producto: ";
-    cin >> producto.costoVendido;
+    producto.costoVendido = pedirFlotante("");
 
     fflush(stdin);
     cout << "Ingrese cuantas unidades se compraron: ";
-    cin >> producto.existencia;
+    producto.existencia = pedirEntero("");
 
     int n = hashFunction(producto.codigo);
 
@@ -414,15 +470,15 @@ void cambioProducto(string code) {
 
                 fflush(stdin);
                 cout << "Ingrese el precio al que se compró el producto: ";
-                cin >> t->product.costoComprado;
+                t->product.costoComprado = pedirFlotante("");
 
                 fflush(stdin);
                 cout << "Ingrese el precio al que se vende el producto: ";
-                cin >> t->product.costoVendido;
+                t->product.costoVendido = pedirFlotante("");
 
                 fflush(stdin);
                 cout << "Ingrese cuantas unidades se compraron: ";
-                cin >> t->product.existencia;
+                t->product.existencia = pedirEntero("");
             }
             t = t->next;
             i++;
@@ -445,9 +501,9 @@ void consultaProducto(string code) {
         Tlist t = hashTable[n];
         int i = 1;
         while (t != NULL) {
-            existe = true;
-            cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
             if (t->product.codigo == code) {
+                existe = true;
+                cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
                 cout << "Código: " << t->product.codigo << endl;
                 cout << "Color: " << t->product.color << endl;
                 cout << "Precio al que se compró: " << t->product.costoComprado << endl;
@@ -471,12 +527,6 @@ void consultaProducto(string code) {
 /****************************************
  * Proveedores
  ***************************************/
-
-typedef struct {
-    char clave[20];
-    char nombre[20];
-    unsigned long long telefono;
-} Proveedor;
 
 void altaProveedor() {
     FILE *arch;
@@ -502,7 +552,7 @@ void altaProveedor() {
 
     fflush(stdin);
     cout << "Digite el número telefónico del proveedor: ";
-    cin >> proveedor.telefono;
+    proveedor.telefono = pedirEntero("");
 
     fwrite(&proveedor, sizeof(Proveedor), 1, arch);
     fclose(arch);
@@ -578,7 +628,7 @@ void cambioProveedor() {
 
             fflush(stdin);
             cout << "Digite el número telefónico del proveedor: ";
-            cin >> proveedor.telefono;
+            proveedor.telefono = pedirEntero("");
 
             int pos = ftell(arch) - sizeof(Proveedor);
             fseek(arch, pos, SEEK_SET);
@@ -631,7 +681,7 @@ void consultaProveedor() {
  ***************************************/
 
 typedef struct {
-    char clave[20];
+    int clave;
     char nombre[20];
     float salario;
 } Vendedor;
@@ -651,16 +701,14 @@ void altaVendedor() {
     bool codigoValido = 0;
 
     fflush(stdin);
-    cout << "Digite la clave del vendedor: ";
-    cin.getline(vendedor.clave, 20, '\n');
+    vendedor.clave = pedirEntero("Digite la clave numérica del vendedor: ");
 
     fflush(stdin);
     cout << "Digite el nombre del vendedor: ";
     cin.getline(vendedor.nombre, 20, '\n');
 
     fflush(stdin);
-    cout << "Digite el número telefónico del vendedor: ";
-    cin >> vendedor.salario;
+    vendedor.salario = pedirFlotante("Digite el salario del vendedor: ");
 
     fwrite(&vendedor, sizeof(Vendedor), 1, arch);
     fclose(arch);
@@ -675,22 +723,23 @@ void bajaVendedor() {
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
-    printf("Ingrese la clave del vendedor a consultar:");
-    fflush(stdin);
-    string cod;
-    getline(cin, cod);
     Vendedor vendedor;
+
+    fflush(stdin);
+    int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
+    ;
+
     int existe = 0;
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
         if (cod == vendedor.clave) {
-            printf("%s : ", vendedor.clave);
-            printf("%s : ", vendedor.nombre);
+            cout << vendedor.clave;
+            printf(": %s : ", vendedor.nombre);
             cout << vendedor.salario << endl;
 
             string cadenaVacia = "";
 
-            strcpy(vendedor.clave, cadenaVacia.c_str());
+            vendedor.clave = 0;
             strcpy(vendedor.nombre, cadenaVacia.c_str());
             vendedor.salario = 0;
 
@@ -716,18 +765,17 @@ void cambioVendedor() {
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-
-    printf("Ingrese la clave del vendedor a consultar:");
-    fflush(stdin);
-    string cod;
-    getline(cin, cod);
     Vendedor vendedor;
+
+    fflush(stdin);
+    int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
+
     int existe = 0;
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
         if (cod == vendedor.clave) {
-            printf("%s : ", vendedor.clave);
-            printf("%s : ", vendedor.nombre);
+            cout << vendedor.clave;
+            printf(": %s : ", vendedor.nombre);
             cout << vendedor.salario << endl;
 
             fflush(stdin);
@@ -735,8 +783,7 @@ void cambioVendedor() {
             cin.getline(vendedor.nombre, 20, '\n');
 
             fflush(stdin);
-            cout << "Digite el número telefónico del vendedor: ";
-            cin >> vendedor.salario;
+            vendedor.salario = pedirFlotante("Digite el salario del vendedor: ");
 
             int pos = ftell(arch) - sizeof(Vendedor);
             fseek(arch, pos, SEEK_SET);
@@ -760,18 +807,373 @@ void consultaVendedor() {
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-
-    printf("Ingrese la clave del vendedor a consultar:");
-    fflush(stdin);
-    string cod;
-    getline(cin, cod);
     Vendedor vendedor;
+
+    fflush(stdin);
+    int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
+
     int existe = 0;
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
         if (cod == vendedor.clave) {
-            printf("%s : ", vendedor.clave);
-            printf("%s : ", vendedor.nombre);
+            cout << vendedor.clave;
+            printf(": %s : ", vendedor.nombre);
+            cout << vendedor.salario << endl;
+
+            existe = 1;
+            break;
+        }
+        fread(&vendedor, sizeof(Vendedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un vendedor con dicha clave\n");
+    fclose(arch);
+}
+
+/****************************************
+ * Vendedores
+ ***************************************/
+
+typedef struct {
+    bool esVenta;
+    int numero;
+    unsigned int dia;
+    unsigned int mes;
+    unsigned int anho;
+    char clave[7];
+    int cantidad;
+    int costo;
+    int vendedor;
+} Venta;
+
+void altaVenta() {
+    FILE *arch;
+    arch = fopen("ventas.dat", "ab");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+
+    Venta venta;
+
+    venta.esVenta = true;
+
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    // int numero;
+    // unsigned int dia;
+    // unsigned int mes;
+    // unsigned int anho;
+    // char clave[20];
+    // int cantidad;
+    // int costo;
+    // int vendedor;
+
+    fflush(stdin);
+    venta.numero = pedirEntero("Digite el numero de venta: ");
+
+    fflush(stdin);
+    venta.dia = pedirEntero("Digite el día de la venta: ");
+
+    fflush(stdin);
+    venta.mes = pedirEntero("Digite el mes de la venta: ");
+
+    fflush(stdin);
+    venta.anho = pedirEntero("Digite el año de la venta: ");
+
+    bool codigoValido = 0;
+
+    while (!codigoValido) {
+        printf("Ingrese el codigo del producto: ");
+        fflush(stdin);
+        cin.getline(venta.clave, 7, '\n');
+        codigoValido = validarCodigo(venta.clave);
+        if (!codigoValido) {
+            cout << "Usted ingreso un codigo invalido!!!" << endl;
+            cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
+        }
+    }
+
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    string code = venta.clave;
+
+    Tlist t;
+
+    int n = hashFunction(code);
+    if (hashTable[n] == NULL) {
+        cout << "No existe el producto con ese codigo";
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+    else {
+        bool existe = false;
+        t = hashTable[n];
+        int i = 1;
+        while (t != NULL) {
+            if (t->product.codigo == code) {
+                existe = true;
+                cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
+
+                cout << "Código: " << t->product.codigo << endl;
+                cout << "Color: " << t->product.color << endl;
+                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
+                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
+                cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Marca: " << t->product.marca << endl;
+                cout << "Modelo: " << t->product.modelo << endl;
+                cout << "Proveedor: " << t->product.proveedor << endl;
+                cout << endl;
+
+                break;
+            }
+            t = t->next;
+            i++;
+        }
+        if (!existe) {
+            cout << "El producto con ese codigo no existe" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
+        cout << endl;
+    }
+
+    fflush(stdin);
+    venta.cantidad = pedirEntero("Digite la cantidad vendida: ");
+
+    if (t->product.existencia < venta.cantidad) {
+        cout << "Se están tratando de comprar" << venta.cantidad << "y solo hay " << t->product.existencia;
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+    else if (venta.cantidad <= 0) {
+        if (venta.cantidad == 0) {
+            cout << "No puede vender 0 productos" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
+        if (venta.cantidad < 0) {
+            cout << "No puede ingresar un número negativo" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
+    }
+    else {
+        t->product.existencia -= venta.cantidad;
+        writeFile();
+    }
+
+    fflush(stdin);
+    cout << "Digite el codigo numerico del vendedor: ";
+    venta.vendedor = pedirEntero("");
+
+    FILE *archV;
+    archV = fopen("vendedores.dat", "r+b");
+    if (archV == NULL) {
+        cout << "Archivo vendedores.dat no encontrado" << endl;
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    Vendedor vendedor;
+
+    fflush(stdin);
+    int cod = venta.vendedor;
+
+    int existe = 0;
+    fread(&vendedor, sizeof(Vendedor), 1, archV);
+    while (!feof(archV)) {
+        if (cod == vendedor.clave) {
+            cout << vendedor.clave;
+            printf(": %s : ", vendedor.nombre);
+            cout << vendedor.salario << endl;
+
+            existe = 1;
+            break;
+        }
+        fread(&vendedor, sizeof(Vendedor), 1, archV);
+    }
+    if (existe == 0) {
+        printf("No existe un vendedor con dicha clave\n");
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+
+    fclose(archV);
+
+    fwrite(&venta, sizeof(Venta), 1, arch);
+    fclose(arch);
+}
+
+void bajaVenta() {
+    FILE *arch;
+    arch = fopen("ventas.dat", "ab");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+
+    Venta venta;
+
+    venta.esVenta = false;
+
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    // int numero;
+    // unsigned int dia;
+    // unsigned int mes;
+    // unsigned int anho;
+    // char clave[20];
+    // int cantidad;
+    // int costo;
+    // int vendedor;
+
+    fflush(stdin);
+    venta.numero = pedirEntero("Digite el numero del reembolzo: ");
+
+    fflush(stdin);
+    venta.dia = pedirEntero("Digite el día del reembolzo: ");
+
+    fflush(stdin);
+    venta.mes = pedirEntero("Digite el mes del reembolzo ");
+
+    fflush(stdin);
+    venta.anho = pedirEntero("Digite el año del reembolzo: ");
+
+    bool codigoValido = 0;
+
+    while (!codigoValido) {
+        printf("Ingrese el codigo del producto: ");
+        fflush(stdin);
+        cin.getline(venta.clave, 7, '\n');
+        codigoValido = validarCodigo(venta.clave);
+        if (!codigoValido) {
+            cout << "Usted ingreso un codigo invalido!!!" << endl;
+            cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
+        }
+    }
+
+    string code = venta.clave;
+
+    Tlist t;
+
+    int n = hashFunction(code);
+    if (hashTable[n] == NULL) {
+        cout << "No existe el producto con ese codigo";
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+    else {
+        bool existe = false;
+        t = hashTable[n];
+        int i = 1;
+        while (t != NULL) {
+            existe = true;
+            cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
+            if (t->product.codigo == code) {
+                cout << "Código: " << t->product.codigo << endl;
+                cout << "Color: " << t->product.color << endl;
+                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
+                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
+                cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Marca: " << t->product.marca << endl;
+                cout << "Modelo: " << t->product.modelo << endl;
+                cout << "Proveedor: " << t->product.proveedor << endl;
+                cout << endl;
+                break;
+            }
+            t = t->next;
+            i++;
+        }
+        if (!existe) {
+            cout << "El producto con ese codigo no existe" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
+        cout << endl;
+    }
+
+    fflush(stdin);
+    venta.cantidad = pedirEntero("Digite la cantidad de productos en el reembolzo: ");
+
+    if (venta.cantidad <= 0) {
+        if (venta.cantidad == 0) {
+            cout << "No puede reembolzar 0 productos" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
+        if (venta.cantidad < 0) {
+            cout << "No puede ingresar un número negativo" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
+    }
+    else {
+        t->product.existencia += venta.cantidad;
+        writeFile();
+    }
+
+    fflush(stdin);
+    cout << "Digite el codigo numerico del vendedor: ";
+    venta.vendedor = pedirEntero("");
+
+    FILE *archV;
+    archV = fopen("vendedores.dat", "r+b");
+    if (archV == NULL) {
+        cout << "Archivo vendedores.dat no encontrado" << endl;
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    Vendedor vendedor;
+
+    fflush(stdin);
+    int cod = venta.vendedor;
+
+    int existe = 0;
+    fread(&vendedor, sizeof(Vendedor), 1, archV);
+    while (!feof(archV)) {
+        if (cod == vendedor.clave) {
+            cout << vendedor.clave;
+            printf(": %s : ", vendedor.nombre);
+            cout << vendedor.salario << endl;
+
+            existe = 1;
+            break;
+        }
+        fread(&vendedor, sizeof(Vendedor), 1, archV);
+    }
+    if (existe == 0) {
+        printf("No existe un vendedor con dicha clave\n");
+        cout << "Se cancela todo" << endl;
+        return;
+    }
+
+    fclose(archV);
+
+    fwrite(&venta, sizeof(Venta), 1, arch);
+    fclose(arch);
+}
+
+void consultaVenta() {
+    FILE *arch;
+    arch = fopen("ventas.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+    Vendedor vendedor;
+
+    fflush(stdin);
+    int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
+
+    int existe = 0;
+    fread(&vendedor, sizeof(Vendedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == vendedor.clave) {
+            cout << vendedor.clave;
+            printf(": %s : ", vendedor.nombre);
             cout << vendedor.salario << endl;
 
             existe = 1;
@@ -789,34 +1191,50 @@ void consultaVendedor() {
  ***************************************/
 
 void inventarioPantalla() {
-    cout << "------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
-    cout << "\t\t\t\t\t\t\t\tPrecio\t\tPrecio\t\t\t\t" << endl;
-    cout << "Clave\t\tModelo\t\tMarca\t\tColor\t\tVenta\t\tCompra\t\tExistencia\tProveedor" << endl;
-    cout << "------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+    for (int i = 0; i < (10 + (20 * 7)); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
+    cout << setw(10) << left << "Clave";
+    cout << setw(20) << left << "Modelo";
+    cout << setw(20) << left << "Marca";
+    cout << setw(20) << left << "Color";
+    cout << setw(20) << left << "Precio Venta";
+    cout << setw(20) << left << "Precio Compra";
+    cout << setw(20) << left << "Existencia";
+    cout << setw(20) << left << "Proveedor";
+    cout << endl;
+
+    for (int i = 0; i < (10 + (20 * 7)); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
     for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
         if (hashTable[i] == NULL) {
         }
         else {
             Tlist t = hashTable[i];
-            cout << t->product.codigo << "\t\t";
-            cout << t->product.modelo << "\t\t";
-            cout << t->product.marca << "\t\t";
-            cout << t->product.color << "\t\t";
-            cout << t->product.costoVendido << "\t\t";
-            cout << t->product.costoComprado << "\t\t";
-            cout << t->product.existencia << "\t\t";
-            cout << t->product.proveedor << "\t\t";
+            cout << setw(10) << left << t->product.codigo;
+            cout << setw(20) << left << t->product.modelo;
+            cout << setw(20) << left << t->product.marca;
+            cout << setw(20) << left << t->product.color;
+            cout << setw(20) << left << t->product.costoVendido;
+            cout << setw(20) << left << t->product.costoComprado;
+            cout << setw(20) << left << t->product.existencia;
+            cout << setw(20) << left << t->product.proveedor;
             cout << endl;
             while (t->next != NULL) {
                 t = t->next;
-                cout << t->product.codigo << "\t\t";
-                cout << t->product.modelo << "\t\t";
-                cout << t->product.marca << "\t\t";
-                cout << t->product.color << "\t\t";
-                cout << t->product.costoVendido << "\t\t";
-                cout << t->product.costoComprado << "\t\t";
-                cout << t->product.existencia << "\t\t";
-                cout << t->product.proveedor << "\t\t";
+                cout << setw(10) << left << t->product.codigo;
+                cout << setw(20) << left << t->product.modelo;
+                cout << setw(20) << left << t->product.marca;
+                cout << setw(20) << left << t->product.color;
+                cout << setw(20) << left << t->product.costoVendido;
+                cout << setw(20) << left << t->product.costoComprado;
+                cout << setw(20) << left << t->product.existencia;
+                cout << setw(20) << left << t->product.proveedor;
                 cout << endl;
             }
         }
@@ -824,6 +1242,86 @@ void inventarioPantalla() {
 }
 
 void reporteDeVentasPantalla() {
+    FILE *arch;
+
+    int pc = 0;
+    int pv = 0;
+
+    arch = fopen("ventas.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    for (int i = 0; i < ((10 * 7) + 15); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
+    cout << setw(10) << left << "Tipo";
+    cout << setw(10) << left << "No.";
+    cout << setw(15) << left << "Fecha";
+    cout << setw(10) << left << "Clave";
+    cout << setw(10) << left << "Cantidad";
+    cout << setw(10) << left << "Precio Comprado";
+    cout << setw(10) << left << "Precio Vendido";
+    cout << setw(10) << left << "Vendedor";
+    cout << endl;
+
+    for (int i = 0; i < ((10 * 7) + 15); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
+    Venta venta;
+    fread(&venta, sizeof(Venta), 1, arch);
+    while (!feof(arch)) {
+        if (venta.esVenta) {
+            cout << setw(10) << left << "Venta";
+        }
+        else {
+            cout << setw(10) << left << "Reembolzo";
+        }
+
+        string fecha = to_string(venta.dia) + "/" + to_string(venta.mes) + "/" + to_string(venta.anho);
+
+        cout << setw(10) << left << venta.numero;
+        cout << setw(15) << left << fecha;
+        cout << setw(10) << left << venta.clave;
+        cout << setw(10) << left << venta.cantidad;
+
+        string code = venta.clave;
+        Tlist t;
+        int n = hashFunction(code);
+        if (hashTable[n] == NULL) {
+            cout << "No existe el producto con ese codigo" << endl;
+        }
+        else {
+            bool existe = false;
+            t = hashTable[n];
+            int i = 1;
+            while (t != NULL) {
+                existe = true;
+                if (t->product.codigo == code) {
+                    break;
+                }
+                t = t->next;
+                i++;
+            }
+            if (!existe) {
+                cout << "El producto con ese codigo no existe" << endl;
+            }
+        }
+        cout << setw(10) << left << t->product.costoComprado;
+        pc += t->product.costoComprado;
+        cout << setw(10) << left << t->product.costoVendido;
+        pv += t->product.costoVendido;
+        cout << setw(10) << left << venta.vendedor;
+        cout << endl;
+
+        fread(&venta, sizeof(Venta), 1, arch);
+    }
+    cout << endl;
+    fclose(arch);
 }
 
 void reporteDeProveedoresPantalla() {
@@ -833,19 +1331,31 @@ void reporteDeProveedoresPantalla() {
         cout << "Archivo no encontrado" << endl;
         return;
     }
-    cout << "-----------------------------------------------------------------------------------------" << endl;
-    cout << "Clave\t\tNombre\t\tTeléfono" << endl;
-    cout << "-----------------------------------------------------------------------------------------" << endl;
+    for (int i = 0; i < ((20 * 3)); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
+    cout << setw(20) << left << "Clave";
+    cout << setw(20) << left << "Nombre";
+    cout << setw(20) << left << "Teléfono";
+    cout << endl;
+
+    for (int i = 0; i < ((20 * 3)); i++) {
+        cout << "-";
+    }
+    cout << endl;
 
     Proveedor proveedor;
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
-        printf("%s\t\t", proveedor.clave);
-        printf("%s\t\t", proveedor.nombre);
-        cout << proveedor.telefono << "\t" << endl;
+        cout << setw(20) << left << proveedor.clave;
+        cout << setw(20) << left << proveedor.nombre;
+        cout << setw(20) << left << proveedor.telefono;
 
         fread(&proveedor, sizeof(Proveedor), 1, arch);
     }
+    cout << endl;
     fclose(arch);
 }
 
@@ -1001,6 +1511,46 @@ void respaldar() {
         }
     }
     fclose(arch);
+
+    arch = fopen("ventas.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("ventas respaldo.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("ventas respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Venta venta;
+                fread(&venta, sizeof(Venta), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&venta, sizeof(Venta), 1, arch2);
+                    fread(&venta, sizeof(Venta), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"ventas respaldo.dat\"");
+
+            arch2 = fopen("ventas respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Venta venta;
+                fread(&venta, sizeof(Venta), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&venta, sizeof(Venta), 1, arch2);
+                    fread(&venta, sizeof(Venta), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
 }
 
 void restaurar() {
@@ -1125,6 +1675,46 @@ void restaurar() {
         }
     }
     fclose(arch);
+
+    arch = fopen("ventas respaldo.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("ventas.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("ventas.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Venta venta;
+                fread(&venta, sizeof(Venta), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&venta, sizeof(Venta), 1, arch2);
+                    fread(&venta, sizeof(Venta), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"ventas.dat\"");
+
+            arch2 = fopen("ventas.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Venta venta;
+                fread(&venta, sizeof(Venta), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&venta, sizeof(Venta), 1, arch2);
+                    fread(&venta, sizeof(Venta), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
 }
 
 void compactar() {
@@ -1162,8 +1752,7 @@ void compactar() {
         Vendedor vendedor;
         fread(&vendedor, sizeof(Vendedor), 1, arch);
         while (!feof(arch)) {
-            int ret = strncmp(vendedor.clave, "", 20);
-            if (ret != 0) {
+            if (vendedor.clave != 0) {
                 fwrite(&vendedor, sizeof(Vendedor), 1, arch2);
             }
             fread(&vendedor, sizeof(Vendedor), 1, arch);
@@ -1377,6 +1966,37 @@ int main() {
                 break;
             }
             case 4: {
+                while (opcion2 != 3) {
+                    bool codigoValido;
+                    string code;
+                    char code_char[6 + 1];
+
+                    system("cls");
+                    cout << "1. Venta de un producto " << endl;
+                    cout << "2. Reembolso de un producto " << endl;
+                    cout << "3. Regresar" << endl;
+                    cout << "Presione su opción: " << endl;
+                    opcion2 = escucharTecla(3);
+                    switch (opcion2) {
+                        case 1: {
+                            altaVenta();
+                            break;
+                        }
+                        case 2: {
+                            bajaVenta();
+                            break;
+                        }
+                        case 3: {
+                            cout << "Regresando al menú principal" << endl;
+                            break;
+                        }
+                        default: {
+                            cout << "Digite una opción correcta" << endl;
+                            break;
+                        }
+                    }
+                    continuar();
+                }
                 break;
             }
             case 5: {
