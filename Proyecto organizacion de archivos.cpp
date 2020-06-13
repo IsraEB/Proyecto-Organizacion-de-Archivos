@@ -13,6 +13,10 @@
 
 using namespace std;
 
+/****************************************
+ * Utilerías
+ ***************************************/
+
 void escucharEspacio() {
     bool con = true;
     while (con) {
@@ -80,6 +84,47 @@ bool validarCodigo(char codigo[]) {
     return true;
 }
 
+int pedirEntero(string peticion) {
+    string str;
+    cout << peticion;
+
+    fflush(stdin);
+    cin >> str;
+    fflush(stdin);
+
+    try {
+        return stoi(str);
+    }
+    catch (...) {
+        cout << "Intentemoslo de nuevo" << endl;
+        return pedirEntero(peticion);
+    }
+}
+
+int escucharTecla(int nOpciones) {
+    char letras[] = {'U', 'N', 'E', 'I', 'F', 'A', 'Y', 'S'};
+    while (true) {
+        for (int i = 0; i < nOpciones; i++) {
+            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                while ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                }
+                return i + 1;
+            }
+        }
+        for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
+            if (GetKeyState(i) & 0x8000) {
+                while (GetKeyState(i) & 0x8000) {
+                }
+                return i - 48;
+            }
+        }
+    }
+}
+
+/****************************************
+ * Productos
+ ***************************************/
+
 typedef struct
 {
     char codigo[7];
@@ -99,6 +144,10 @@ struct node {
 };
 typedef struct node *Tlist;
 
+/************
+ * Hash
+ ************/
+
 int hashFunction(string code) {
     string number = code.substr(2, 2);
     int n = atoi(number.c_str());
@@ -113,13 +162,13 @@ void initializeHashTable() {
     }
 }
 
-bool fillHashTable() {
+void fillHashTable() {
     FILE *arch;
 
     arch = fopen("productos.dat", "rb");
 
     if (arch == NULL) {
-        return false;
+        return;
     }
 
     tproducto producto;
@@ -148,7 +197,7 @@ bool fillHashTable() {
         fread(&producto, sizeof(tproducto), 1, arch);
     }
     fclose(arch);
-    return true;
+    return;
 }
 
 void printHashTable() {
@@ -196,6 +245,10 @@ void writeFile() {
     }
     fclose(arch);
 }
+
+/************
+ * Archivos de productos
+ ************/
 
 void altaProducto() {
     tproducto producto;
@@ -415,6 +468,10 @@ void consultaProducto(string code) {
     }
 }
 
+/****************************************
+ * Proveedores
+ ***************************************/
+
 typedef struct {
     char clave[20];
     char nombre[20];
@@ -568,6 +625,10 @@ void consultaProveedor() {
         printf("No existe un proveedor con dicha clave\n");
     fclose(arch);
 }
+
+/****************************************
+ * Vendedores
+ ***************************************/
 
 typedef struct {
     char clave[20];
@@ -723,55 +784,410 @@ void consultaVendedor() {
     fclose(arch);
 }
 
-int pedirEntero(string peticion) {
+/****************************************
+ * Reportes en pantalla
+ ***************************************/
+
+void inventarioPantalla() {
+    cout << "------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+    cout << "\t\t\t\t\t\t\t\tPrecio\t\tPrecio\t\t\t\t" << endl;
+    cout << "Clave\t\tModelo\t\tMarca\t\tColor\t\tVenta\t\tCompra\t\tExistencia\tProveedor" << endl;
+    cout << "------------------------------------------------------------------------------------------------------------------------------------------------------" << endl;
+    for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
+        if (hashTable[i] == NULL) {
+        }
+        else {
+            Tlist t = hashTable[i];
+            cout << t->product.codigo << "\t\t";
+            cout << t->product.modelo << "\t\t";
+            cout << t->product.marca << "\t\t";
+            cout << t->product.color << "\t\t";
+            cout << t->product.costoVendido << "\t\t";
+            cout << t->product.costoComprado << "\t\t";
+            cout << t->product.existencia << "\t\t";
+            cout << t->product.proveedor << "\t\t";
+            cout << endl;
+            while (t->next != NULL) {
+                t = t->next;
+                cout << t->product.codigo << "\t\t";
+                cout << t->product.modelo << "\t\t";
+                cout << t->product.marca << "\t\t";
+                cout << t->product.color << "\t\t";
+                cout << t->product.costoVendido << "\t\t";
+                cout << t->product.costoComprado << "\t\t";
+                cout << t->product.existencia << "\t\t";
+                cout << t->product.proveedor << "\t\t";
+                cout << endl;
+            }
+        }
+    }
+}
+
+void reporteDeVentasPantalla() {
+}
+
+void reporteDeProveedoresPantalla() {
+    FILE *arch;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    cout << "-----------------------------------------------------------------------------------------" << endl;
+    cout << "Clave\t\tNombre\t\tTeléfono" << endl;
+    cout << "-----------------------------------------------------------------------------------------" << endl;
+
+    Proveedor proveedor;
+    fread(&proveedor, sizeof(Proveedor), 1, arch);
+    while (!feof(arch)) {
+        printf("%s\t\t", proveedor.clave);
+        printf("%s\t\t", proveedor.nombre);
+        cout << proveedor.telefono << "\t" << endl;
+
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+    }
+    fclose(arch);
+}
+
+/****************************************
+ * Reportes en archivo de texto
+ ***************************************/
+
+void inventarioArchivo() {
+}
+
+void reporteDeVentasArchivo() {
+}
+
+void reporteDeProveedoresArchivo() {
+}
+
+/****************************************
+ * Administración
+ ***************************************/
+
+void crear() {
     string str;
-    cout << peticion;
 
-    fflush(stdin);
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    cout << "Dijite el nombre del archivo que quiere crear, junto con su extensión: ";
     cin >> str;
-    fflush(stdin);
 
-    try {
-        return stoi(str);
+    string comando = "type nul > " + str;
+
+    system(comando.c_str());
+}
+
+void respaldar() {
+    FILE *arch;
+
+    arch = fopen("productos.dat", "r+b");
+    if (arch == NULL) {
     }
-    catch (...) {
-        cout << "Intentemoslo de nuevo" << endl;
-        return pedirEntero(peticion);
+    else {
+        FILE *arch2;
+        arch2 = fopen("productos respaldo.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("productos respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                tproducto producto;
+                fread(&producto, sizeof(tproducto), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&producto, sizeof(tproducto), 1, arch2);
+                    fread(&producto, sizeof(tproducto), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"productos respaldo.dat\"");
+
+            arch2 = fopen("productos respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                tproducto producto;
+                fread(&producto, sizeof(tproducto), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&producto, sizeof(tproducto), 1, arch2);
+                    fread(&producto, sizeof(tproducto), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
+
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("proveedores respaldo.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("proveedores respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Proveedor proveedor;
+                fread(&proveedor, sizeof(Proveedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&proveedor, sizeof(Proveedor), 1, arch2);
+                    fread(&proveedor, sizeof(Proveedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"proveedores respaldo.dat\"");
+
+            arch2 = fopen("proveedores respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Proveedor proveedor;
+                fread(&proveedor, sizeof(Proveedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&proveedor, sizeof(Proveedor), 1, arch2);
+                    fread(&proveedor, sizeof(Proveedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
+
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("vendedores respaldo.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("vendedores respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Vendedor vendedor;
+                fread(&vendedor, sizeof(Vendedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&vendedor, sizeof(Vendedor), 1, arch2);
+                    fread(&vendedor, sizeof(Vendedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"vendedores respaldo.dat\"");
+
+            arch2 = fopen("vendedores respaldo.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Vendedor vendedor;
+                fread(&vendedor, sizeof(Vendedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&vendedor, sizeof(Vendedor), 1, arch2);
+                    fread(&vendedor, sizeof(Vendedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
+}
+
+void restaurar() {
+    FILE *arch;
+
+    arch = fopen("productos respaldo.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("productos.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("productos.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                tproducto producto;
+                fread(&producto, sizeof(tproducto), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&producto, sizeof(tproducto), 1, arch2);
+                    fread(&producto, sizeof(tproducto), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"productos.dat\"");
+
+            arch2 = fopen("productos.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                tproducto producto;
+                fread(&producto, sizeof(tproducto), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&producto, sizeof(tproducto), 1, arch2);
+                    fread(&producto, sizeof(tproducto), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
+
+    arch = fopen("proveedores respaldo.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("proveedores.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("proveedores.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Proveedor proveedor;
+                fread(&proveedor, sizeof(Proveedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&proveedor, sizeof(Proveedor), 1, arch2);
+                    fread(&proveedor, sizeof(Proveedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"proveedores.dat\"");
+
+            arch2 = fopen("proveedores.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Proveedor proveedor;
+                fread(&proveedor, sizeof(Proveedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&proveedor, sizeof(Proveedor), 1, arch2);
+                    fread(&proveedor, sizeof(Proveedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
+
+    arch = fopen("vendedores respaldo.dat", "r+b");
+    if (arch == NULL) {
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("vendedores.dat", "r+b");
+        if (arch2 == NULL) {
+            arch2 = fopen("vendedores.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Vendedor vendedor;
+                fread(&vendedor, sizeof(Vendedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&vendedor, sizeof(Vendedor), 1, arch2);
+                    fread(&vendedor, sizeof(Vendedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+        else {
+            fclose(arch2);
+            system("del \"vendedores.dat\"");
+
+            arch2 = fopen("vendedores.dat", "ab");
+            if (arch2 == NULL) {
+            }
+            else {
+                Vendedor vendedor;
+                fread(&vendedor, sizeof(Vendedor), 1, arch);
+                while (!feof(arch)) {
+                    fwrite(&vendedor, sizeof(Vendedor), 1, arch2);
+                    fread(&vendedor, sizeof(Vendedor), 1, arch);
+                }
+                fclose(arch2);
+            }
+        }
+    }
+    fclose(arch);
+}
+
+void compactar() {
+    FILE *arch;
+
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        fclose(arch);
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("proveedores temporal.dat", "ab");
+        Proveedor proveedor;
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+        while (!feof(arch)) {
+            int ret = strncmp(proveedor.clave, "", 20);
+            if (ret != 0) {
+                fwrite(&proveedor, sizeof(Proveedor), 1, arch2);
+            }
+            fread(&proveedor, sizeof(Proveedor), 1, arch);
+        }
+        fclose(arch);
+        fclose(arch2);
+        system("del proveedores.dat");
+        system("ren \"proveedores temporal.dat\" proveedores.dat");
+    }
+
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch == NULL) {
+        fclose(arch);
+    }
+    else {
+        FILE *arch2;
+        arch2 = fopen("vendedores temporal.dat", "ab");
+        Vendedor vendedor;
+        fread(&vendedor, sizeof(Vendedor), 1, arch);
+        while (!feof(arch)) {
+            int ret = strncmp(vendedor.clave, "", 20);
+            if (ret != 0) {
+                fwrite(&vendedor, sizeof(Vendedor), 1, arch2);
+            }
+            fread(&vendedor, sizeof(Vendedor), 1, arch);
+        }
+        fclose(arch);
+        fclose(arch2);
+        system("del vendedores.dat");
+        system("ren \"vendedores temporal.dat\" vendedores.dat");
     }
 }
 
-int escucharTecla(int nOpciones) {
-    char letras[] = {'U', 'N', 'E', 'I', 'F', 'A', 'Y', 'S'};
-    while (true) {
-        for (int i = 0; i < nOpciones; i++) {
-            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
-                while ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
-                }
-                return i + 1;
-            }
-        }
-        for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
-            if (GetKeyState(i) & 0x8000) {
-                while (GetKeyState(i) & 0x8000) {
-                }
-                return i - 48;
-            }
-        }
-    }
-}
+/****************************************
+ * Main
+ ***************************************/
 
 int main() {
     setlocale(LC_ALL, "");
     fflush(stdin);
 
     initializeHashTable();
-    if (!fillHashTable()) {
-        system("cls");
-        cout << "Error al abrir productos.dat" << endl;
-        exit(1);
-    }
+    fillHashTable();
 
-    int opcion1, opcion2, opcion3;
+    int opcion1,
+        opcion2, opcion3;
 
     string objetivo;
 
@@ -984,9 +1400,11 @@ int main() {
                                 opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
+                                        inventarioPantalla();
                                         break;
                                     }
                                     case 2: {
+                                        inventarioArchivo();
                                         break;
                                     }
                                     case 3: {
@@ -1012,9 +1430,11 @@ int main() {
                                 opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
+                                        reporteDeVentasPantalla();
                                         break;
                                     }
                                     case 2: {
+                                        reporteDeVentasArchivo();
                                         break;
                                     }
                                     case 3: {
@@ -1040,9 +1460,11 @@ int main() {
                                 opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
+                                        reporteDeProveedoresPantalla();
                                         break;
                                     }
                                     case 2: {
+                                        reporteDeProveedoresArchivo();
                                         break;
                                     }
                                     case 3: {
@@ -1097,15 +1519,19 @@ int main() {
                         opcion2 = escucharTecla(5);
                         switch (opcion2) {
                             case 1: {
+                                crear();
                                 break;
                             }
                             case 2: {
+                                respaldar();
                                 break;
                             }
                             case 3: {
+                                restaurar();
                                 break;
                             }
                             case 4: {
+                                compactar();
                                 break;
                             }
                             case 5: {
