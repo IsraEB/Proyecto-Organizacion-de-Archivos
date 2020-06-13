@@ -475,7 +475,7 @@ void consultaProducto(string code) {
 typedef struct {
     char clave[20];
     char nombre[20];
-    unsigned int telefono;
+    unsigned long long telefono;
 } Proveedor;
 
 void altaProveedor() {
