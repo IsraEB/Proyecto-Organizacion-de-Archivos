@@ -1,6 +1,7 @@
 #include <conio.h>
 #include <locale.h>
 #include <stdlib.h>
+#include <string.h>
 #include <wchar.h>
 #include <windows.h>
 
@@ -8,17 +9,7 @@
 #include <iostream>
 #include <string>
 
-int sleepT = 100;
-
 using namespace std;
-
-// void continuar() {
-//     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-//     cout << "Presione cualquier tecla para continuar\n";
-//     fflush(stdin);
-//     getch();
-//     Sleep(sleepT);
-// }
 
 void escucharEspacio() {
     bool con = true;
@@ -37,6 +28,353 @@ void continuar() {
     fflush(stdin);
     escucharEspacio();
 }
+
+typedef struct
+{
+    char codigo[7];
+    char marca[20];
+    char modelo[20];
+    char color[20];
+    float costoComprado;
+    float costoVendido;
+    int existencia;
+    char proveedor[20];
+} tproducto;
+
+struct node {
+    tproducto product;
+    struct node *next;
+};
+typedef struct node *Tlist;
+
+typedef struct {
+    char clave[20];
+    char nombre[20];
+    unsigned int telefono;
+} Proveedor;
+
+void altaProveedor() {
+    FILE *arch;
+    arch = fopen("proveedores.dat", "ab");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+
+    Proveedor proveedor;
+
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    bool codigoValido = 0;
+
+    fflush(stdin);
+    cout << "Digite la clave del proveedor: ";
+    cin.getline(proveedor.clave, 20, '\n');
+
+    fflush(stdin);
+    cout << "Digite el nombre del proveedor: ";
+    cin.getline(proveedor.nombre, 20, '\n');
+
+    fflush(stdin);
+    cout << "Digite el número telefónico del proveedor: ";
+    cin >> proveedor.telefono;
+
+    fwrite(&proveedor, sizeof(Proveedor), 1, arch);
+    fclose(arch);
+}
+
+void bajaProveedor() {
+    FILE *arch;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    printf("Ingrese la clave del proveedor a consultar:");
+    fflush(stdin);
+    string cod;
+    getline(cin, cod);
+    Proveedor proveedor;
+    int existe = 0;
+    fread(&proveedor, sizeof(Proveedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == proveedor.clave) {
+            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
+
+            printf("%s : ", proveedor.clave);
+            printf("%s : ", proveedor.nombre);
+            cout << proveedor.telefono << endl;
+
+            string cadenaVacia = "";
+
+            strcpy(proveedor.clave, cadenaVacia.c_str());
+            strcpy(proveedor.nombre, cadenaVacia.c_str());
+            proveedor.telefono = 0;
+
+            int pos = ftell(arch) - sizeof(Proveedor);
+            fseek(arch, pos, SEEK_SET);
+            fwrite(&proveedor, sizeof(Proveedor), 1, arch);
+            printf("Se borro el proveedor.\n");
+            existe = 1;
+            break;
+        }
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un proveedor con dicha clave\n");
+    fclose(arch);
+}
+
+void cambioProveedor() {
+    FILE *arch;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    printf("Ingrese la clave del proveedor a consultar:");
+    fflush(stdin);
+    string cod;
+    getline(cin, cod);
+    Proveedor proveedor;
+    int existe = 0;
+    fread(&proveedor, sizeof(Proveedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == proveedor.clave) {
+            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
+
+            printf("%s : ", proveedor.clave);
+            printf("%s : ", proveedor.nombre);
+            cout << proveedor.telefono << endl;
+
+            fflush(stdin);
+            cout << "Digite el nombre del proveedor: ";
+            cin.getline(proveedor.nombre, 20, '\n');
+
+            fflush(stdin);
+            cout << "Digite el número telefónico del proveedor: ";
+            cin >> proveedor.telefono;
+
+            int pos = ftell(arch) - sizeof(Proveedor);
+            fseek(arch, pos, SEEK_SET);
+            fwrite(&proveedor, sizeof(Proveedor), 1, arch);
+            printf("Se modifico el proveedor.\n");
+            existe = 1;
+            break;
+        }
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un proveedor con dicha clave\n");
+    fclose(arch);
+}
+
+void consultaProveedor() {
+    FILE *arch;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    printf("Ingrese la clave del proveedor a consultar:");
+    fflush(stdin);
+    string cod;
+    getline(cin, cod);
+    Proveedor proveedor;
+    int existe = 0;
+    fread(&proveedor, sizeof(Proveedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == proveedor.clave) {
+            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
+
+            printf("%s : ", proveedor.clave);
+            printf("%s : ", proveedor.nombre);
+            cout << proveedor.telefono << endl;
+
+            existe = 1;
+            break;
+        }
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un proveedor con dicha clave\n");
+    fclose(arch);
+}
+
+typedef struct {
+    char clave[20];
+    char nombre[20];
+    float salario;
+} Vendedor;
+
+void altaVendedor() {
+    FILE *arch;
+    arch = fopen("vendedores.dat", "ab");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+
+    Vendedor vendedor;
+
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    bool codigoValido = 0;
+
+    fflush(stdin);
+    cout << "Digite la clave del vendedor: ";
+    cin.getline(vendedor.clave, 20, '\n');
+
+    fflush(stdin);
+    cout << "Digite el nombre del vendedor: ";
+    cin.getline(vendedor.nombre, 20, '\n');
+
+    fflush(stdin);
+    cout << "Digite el número telefónico del vendedor: ";
+    cin >> vendedor.salario;
+
+    fwrite(&vendedor, sizeof(Vendedor), 1, arch);
+    fclose(arch);
+}
+
+void bajaVendedor() {
+    FILE *arch;
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    printf("Ingrese la clave del vendedor a consultar:");
+    fflush(stdin);
+    string cod;
+    getline(cin, cod);
+    Vendedor vendedor;
+    int existe = 0;
+    fread(&vendedor, sizeof(Vendedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == vendedor.clave) {
+            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
+
+            printf("%s : ", vendedor.clave);
+            printf("%s : ", vendedor.nombre);
+            cout << vendedor.salario << endl;
+
+            string cadenaVacia = "";
+
+            strcpy(vendedor.clave, cadenaVacia.c_str());
+            strcpy(vendedor.nombre, cadenaVacia.c_str());
+            vendedor.salario = 0;
+
+            int pos = ftell(arch) - sizeof(Vendedor);
+            fseek(arch, pos, SEEK_SET);
+            fwrite(&vendedor, sizeof(Vendedor), 1, arch);
+            printf("Se borro el vendedor.\n");
+            existe = 1;
+            break;
+        }
+        fread(&vendedor, sizeof(Vendedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un vendedor con dicha clave\n");
+    fclose(arch);
+}
+
+void cambioVendedor() {
+    FILE *arch;
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    printf("Ingrese la clave del vendedor a consultar:");
+    fflush(stdin);
+    string cod;
+    getline(cin, cod);
+    Vendedor vendedor;
+    int existe = 0;
+    fread(&vendedor, sizeof(Vendedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == vendedor.clave) {
+            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
+
+            printf("%s : ", vendedor.clave);
+            printf("%s : ", vendedor.nombre);
+            cout << vendedor.salario << endl;
+
+            fflush(stdin);
+            cout << "Digite el nombre del vendedor: ";
+            cin.getline(vendedor.nombre, 20, '\n');
+
+            fflush(stdin);
+            cout << "Digite el número telefónico del vendedor: ";
+            cin >> vendedor.salario;
+
+            int pos = ftell(arch) - sizeof(Vendedor);
+            fseek(arch, pos, SEEK_SET);
+            fwrite(&vendedor, sizeof(Vendedor), 1, arch);
+            printf("Se modifico el vendedor.\n");
+            existe = 1;
+            break;
+        }
+        fread(&vendedor, sizeof(Vendedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un vendedor con dicha clave\n");
+    fclose(arch);
+}
+
+void consultaVendedor() {
+    FILE *arch;
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        return;
+    }
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    printf("Ingrese la clave del vendedor a consultar:");
+    fflush(stdin);
+    string cod;
+    getline(cin, cod);
+    Vendedor vendedor;
+    int existe = 0;
+    fread(&vendedor, sizeof(Vendedor), 1, arch);
+    while (!feof(arch)) {
+        if (cod == vendedor.clave) {
+            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
+
+            printf("%s : ", vendedor.clave);
+            printf("%s : ", vendedor.nombre);
+            cout << vendedor.salario << endl;
+
+            existe = 1;
+            break;
+        }
+        fread(&vendedor, sizeof(Vendedor), 1, arch);
+    }
+    if (existe == 0)
+        printf("No existe un vendedor con dicha clave\n");
+    fclose(arch);
+}
+
+// int sleepT = 100;
+// void continuar() {
+//     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+//     cout << "Presione cualquier tecla para continuar\n";
+//     fflush(stdin);
+//     getch();
+//     Sleep(sleepT);
+// }
 
 int pedirEntero(string peticion) {
     string str;
@@ -152,15 +490,19 @@ int main() {
                     opcion2 = escucharTecla(5);
                     switch (opcion2) {
                         case 1: {
+                            altaProveedor();
                             break;
                         }
                         case 2: {
+                            bajaProveedor();
                             break;
                         }
                         case 3: {
+                            cambioProveedor();
                             break;
                         }
                         case 4: {
+                            consultaProveedor();
                             break;
                         }
                         case 5: {
@@ -189,15 +531,19 @@ int main() {
                     opcion2 = escucharTecla(5);
                     switch (opcion2) {
                         case 1: {
+                            altaVendedor();
                             break;
                         }
                         case 2: {
+                            bajaVendedor();
                             break;
                         }
                         case 3: {
+                            cambioVendedor();
                             break;
                         }
                         case 4: {
+                            consultaVendedor();
                             break;
                         }
                         case 5: {
