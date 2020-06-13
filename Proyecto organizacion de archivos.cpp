@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string>
 
+#define NUMBER_OF_SLOTS 100
+
 using namespace std;
 
 void escucharEspacio() {
@@ -29,16 +31,66 @@ void continuar() {
     escucharEspacio();
 }
 
+bool validarCodigo(char codigo[]) {
+    char caracter;
+    bool esNumero = false;
+    bool esLetra = false;
+
+    bool codigoValido = false;
+
+    string cadena = codigo;
+    if (cadena.length() > 6 || cadena.length() == 0) {
+        return false;
+    }
+
+    for (int i = 0; i < 6; i++) {
+        caracter = codigo[i];
+        for (int j = 48; j <= 57; j++) {
+            if (caracter == j) {
+                esNumero = true;
+                esLetra = false;
+            }
+        }
+        for (int j = 97; j <= 122; j++) {
+            if (caracter == j) {
+                esNumero = false;
+                esLetra = true;
+            }
+        }
+        for (int j = 65; j <= 90; j++) {
+            if (caracter == j) {
+                esNumero = false;
+                esLetra = true;
+            }
+        }
+
+        if (esNumero == false && esLetra == false) {
+            return false;
+        }
+        if ((i == 0 || i == 1) && esNumero) {
+            return false;
+        }
+        if ((i != 0 && i != 1) && esLetra) {
+            return false;
+        }
+
+        esNumero = false;
+        esLetra = false;
+    }
+    return true;
+}
+
 typedef struct
 {
     char codigo[7];
+    char color[20];
     char marca[20];
     char modelo[20];
-    char color[20];
+    char proveedor[20];
     float costoComprado;
     float costoVendido;
     int existencia;
-    char proveedor[20];
+
 } tproducto;
 
 struct node {
@@ -46,6 +98,322 @@ struct node {
     struct node *next;
 };
 typedef struct node *Tlist;
+
+int hashFunction(string code) {
+    string number = code.substr(2, 2);
+    int n = atoi(number.c_str());
+    return n;
+}
+
+Tlist hashTable[NUMBER_OF_SLOTS];
+
+void initializeHashTable() {
+    for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
+        hashTable[i] = NULL;
+    }
+}
+
+bool fillHashTable() {
+    FILE *arch;
+
+    arch = fopen("productos.dat", "rb");
+
+    if (arch == NULL) {
+        return false;
+    }
+
+    tproducto producto;
+
+    fread(&producto, sizeof(tproducto), 1, arch);
+    while (!feof(arch)) {
+        int n = hashFunction(producto.codigo);
+
+        if (hashTable[n] == NULL) {
+            Tlist q = new (struct node);
+            q->product = producto;
+            q->next = NULL;
+            hashTable[n] = q;
+        }
+        else {
+            Tlist t, q = new (struct node);
+            q->product = producto;
+            q->next = NULL;
+            t = hashTable[n];
+            while (t->next != NULL) {
+                t = t->next;
+            }
+            t->next = q;
+        }
+
+        fread(&producto, sizeof(tproducto), 1, arch);
+    }
+    fclose(arch);
+    return true;
+}
+
+void printHashTable() {
+    for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
+        if (hashTable[i] == NULL) {
+            cout << i << ".-" << endl;
+        }
+        else {
+            Tlist t = hashTable[i];
+            cout << i << ".- " << t->product.codigo;
+            while (t->next != NULL) {
+                t = t->next;
+                cout << " -> " << t->product.codigo;
+            }
+            cout << endl;
+        }
+    }
+}
+
+void writeFile() {
+    FILE *arch;
+    arch = fopen("productos.dat", "w+b");
+    if (arch == NULL) {
+        cout << "Archivo no encontrado" << endl;
+        continuar();
+        exit(1);
+    }
+
+    Tlist list;
+    tproducto product;
+
+    for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
+        if (hashTable[i] == NULL) {
+        }
+        else {
+            Tlist t = hashTable[i];
+            product = t->product;
+            fwrite(&product, sizeof(tproducto), 1, arch);
+            while (t->next != NULL) {
+                t = t->next;
+                product = t->product;
+                fwrite(&product, sizeof(tproducto), 1, arch);
+            }
+        }
+    }
+    fclose(arch);
+}
+
+void altaProducto() {
+    tproducto producto;
+    bool codigoValido = 0;
+
+    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+    while (!codigoValido) {
+        printf("Ingrese el codigo del producto: ");
+        fflush(stdin);
+        gets(producto.codigo);
+        codigoValido = validarCodigo(producto.codigo);
+        if (!codigoValido) {
+            cout << "Usted ingreso un codigo invalido!!!" << endl;
+            cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
+        }
+    }
+
+    fflush(stdin);
+    cout << "Ingrese el color del producto: ";
+    cin.getline(producto.color, 20, '\n');
+
+    fflush(stdin);
+    cout << "Ingrese la marca del producto: ";
+    cin.getline(producto.marca, 20, '\n');
+
+    fflush(stdin);
+    cout << "Ingrese el modelo del producto: ";
+    cin.getline(producto.modelo, 20, '\n');
+
+    fflush(stdin);
+    cout << "Ingrese el proveedor del producto: ";
+    cin.getline(producto.proveedor, 20, '\n');
+
+    fflush(stdin);
+    cout << "Ingrese el precio al que se compró el producto: ";
+    cin >> producto.costoComprado;
+
+    fflush(stdin);
+    cout << "Ingrese el precio al que se vende el producto: ";
+    cin >> producto.costoVendido;
+
+    fflush(stdin);
+    cout << "Ingrese cuantas unidades se compraron: ";
+    cin >> producto.existencia;
+
+    int n = hashFunction(producto.codigo);
+
+    if (hashTable[n] == NULL) {
+        Tlist q = new (struct node);
+        q->product = producto;
+        q->next = NULL;
+        hashTable[n] = q;
+    }
+    else {
+        Tlist t, q = new (struct node);
+        q->product = producto;
+        q->next = NULL;
+        t = hashTable[n];
+        while (t->next != NULL) {
+            t = t->next;
+        }
+        t->next = q;
+    }
+    writeFile();
+}
+
+void bajaProducto(string code) {
+    int n = hashFunction(code);
+    if (hashTable[n] == NULL) {
+        cout << "No existe el producto con ese codigo";
+    }
+    else {
+        bool existe = false;
+        Tlist t = hashTable[n];
+        int i = 1;
+        if (t->next == NULL) {
+            if (t->product.codigo == code) {
+                cout << "Código: " << t->product.codigo << endl;
+                cout << "Color: " << t->product.color << endl;
+                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
+                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
+                cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Marca: " << t->product.marca << endl;
+                cout << "Modelo: " << t->product.modelo << endl;
+                cout << "Proveedor: " << t->product.proveedor << endl;
+                cout << endl;
+
+                hashTable[n] = NULL;
+                cout << "Producto eliminado" << endl;
+            }
+            else {
+                cout << "El producto con ese codigo no existe" << endl;
+            }
+        }
+        else {
+            while (t != NULL) {
+                if (t->next->product.codigo == code) {
+                    cout << "Código: " << t->product.codigo << endl;
+                    cout << "Color: " << t->product.color << endl;
+                    cout << "Precio al que se compró: " << t->product.costoComprado << endl;
+                    cout << "Precio al que se vende: " << t->product.costoVendido << endl;
+                    cout << "Existencia: " << t->product.existencia << endl;
+                    cout << "Marca: " << t->product.marca << endl;
+                    cout << "Modelo: " << t->product.modelo << endl;
+                    cout << "Proveedor: " << t->product.proveedor << endl;
+                    cout << endl;
+
+                    existe = true;
+                    t->next = t->next->next;
+                    cout << "Producto eliminado" << endl;
+                }
+                t = t->next;
+                i++;
+            }
+            if (!existe) {
+                cout << "El producto con ese codigo no existe" << endl;
+            }
+            cout << endl;
+        }
+    }
+    writeFile();
+}
+
+void cambioProducto(string code) {
+    int n = hashFunction(code);
+    if (hashTable[n] == NULL) {
+        cout << "No existe el producto con ese codigo";
+    }
+    else {
+        bool existe = false;
+        Tlist t = hashTable[n];
+        int i = 1;
+        while (t != NULL) {
+            if (t->product.codigo == code) {
+                existe = true;
+
+                cout << "Código: " << t->product.codigo << endl;
+                cout << "Color: " << t->product.color << endl;
+                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
+                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
+                cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Marca: " << t->product.marca << endl;
+                cout << "Modelo: " << t->product.modelo << endl;
+                cout << "Proveedor: " << t->product.proveedor << endl;
+                cout << endl;
+
+                fflush(stdin);
+                cout << "Ingrese el color del producto: ";
+                cin.getline(t->product.color, 20, '\n');
+
+                fflush(stdin);
+                cout << "Ingrese la marca del producto: ";
+                cin.getline(t->product.marca, 20, '\n');
+
+                fflush(stdin);
+                cout << "Ingrese el modelo del producto: ";
+                cin.getline(t->product.modelo, 20, '\n');
+
+                fflush(stdin);
+                cout << "Ingrese el proveedor del producto: ";
+                cin.getline(t->product.proveedor, 20, '\n');
+
+                fflush(stdin);
+                cout << "Ingrese el precio al que se compró el producto: ";
+                cin >> t->product.costoComprado;
+
+                fflush(stdin);
+                cout << "Ingrese el precio al que se vende el producto: ";
+                cin >> t->product.costoVendido;
+
+                fflush(stdin);
+                cout << "Ingrese cuantas unidades se compraron: ";
+                cin >> t->product.existencia;
+            }
+            t = t->next;
+            i++;
+        }
+        if (!existe) {
+            cout << "El producto con ese codigo no existe" << endl;
+        }
+        cout << endl;
+    }
+    writeFile();
+}
+
+void consultaProducto(string code) {
+    int n = hashFunction(code);
+    if (hashTable[n] == NULL) {
+        cout << "No existe el producto con ese codigo";
+    }
+    else {
+        bool existe = false;
+        Tlist t = hashTable[n];
+        int i = 1;
+        while (t != NULL) {
+            existe = true;
+            cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
+            if (t->product.codigo == code) {
+                cout << "Código: " << t->product.codigo << endl;
+                cout << "Color: " << t->product.color << endl;
+                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
+                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
+                cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Marca: " << t->product.marca << endl;
+                cout << "Modelo: " << t->product.modelo << endl;
+                cout << "Proveedor: " << t->product.proveedor << endl;
+                cout << endl;
+            }
+            t = t->next;
+            i++;
+        }
+        if (!existe) {
+            cout << "El producto con ese codigo no existe" << endl;
+        }
+        cout << endl;
+    }
+}
 
 typedef struct {
     char clave[20];
@@ -101,8 +469,6 @@ void bajaProveedor() {
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
-            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
-
             printf("%s : ", proveedor.clave);
             printf("%s : ", proveedor.nombre);
             cout << proveedor.telefono << endl;
@@ -145,8 +511,6 @@ void cambioProveedor() {
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
-            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
-
             printf("%s : ", proveedor.clave);
             printf("%s : ", proveedor.nombre);
             cout << proveedor.telefono << endl;
@@ -191,8 +555,6 @@ void consultaProveedor() {
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
-            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
-
             printf("%s : ", proveedor.clave);
             printf("%s : ", proveedor.nombre);
             cout << proveedor.telefono << endl;
@@ -261,8 +623,6 @@ void bajaVendedor() {
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
         if (cod == vendedor.clave) {
-            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
-
             printf("%s : ", vendedor.clave);
             printf("%s : ", vendedor.nombre);
             cout << vendedor.salario << endl;
@@ -305,8 +665,6 @@ void cambioVendedor() {
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
         if (cod == vendedor.clave) {
-            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
-
             printf("%s : ", vendedor.clave);
             printf("%s : ", vendedor.nombre);
             cout << vendedor.salario << endl;
@@ -351,8 +709,6 @@ void consultaVendedor() {
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
         if (cod == vendedor.clave) {
-            //printf("%i %s %0.2f\n", producto.codigo, producto.descripcion, producto.precio);
-
             printf("%s : ", vendedor.clave);
             printf("%s : ", vendedor.nombre);
             cout << vendedor.salario << endl;
@@ -366,15 +722,6 @@ void consultaVendedor() {
         printf("No existe un vendedor con dicha clave\n");
     fclose(arch);
 }
-
-// int sleepT = 100;
-// void continuar() {
-//     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-//     cout << "Presione cualquier tecla para continuar\n";
-//     fflush(stdin);
-//     getch();
-//     Sleep(sleepT);
-// }
 
 int pedirEntero(string peticion) {
     string str;
@@ -417,6 +764,13 @@ int main() {
     setlocale(LC_ALL, "");
     fflush(stdin);
 
+    initializeHashTable();
+    if (!fillHashTable()) {
+        system("cls");
+        cout << "Error al abrir productos.dat" << endl;
+        exit(1);
+    }
+
     int opcion1, opcion2, opcion3;
 
     string objetivo;
@@ -443,6 +797,11 @@ int main() {
             case 1: {
                 while (opcion2 != 5) {
                     objetivo = "accesorio";
+
+                    bool codigoValido;
+                    string code;
+                    char code_char[6 + 1];
+
                     system("cls");
                     cout << "1. Agregar " + objetivo << endl;
                     cout << "2. Eliminar " + objetivo << endl;
@@ -453,15 +812,57 @@ int main() {
                     opcion2 = escucharTecla(5);
                     switch (opcion2) {
                         case 1: {
+                            altaProducto();
                             break;
                         }
                         case 2: {
+                            FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+                            while (!codigoValido) {
+                                printf("Ingrese el codigo del producto a eliminar: ");
+                                fflush(stdin);
+                                getline(cin, code);
+                                strcpy(code_char, code.c_str());
+                                codigoValido = validarCodigo(code_char);
+                                if (!codigoValido) {
+                                    cout << "Usted ingreso un codigo invalido!!!" << endl;
+                                    cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
+                                }
+                            }
+                            bajaProducto(code);
                             break;
                         }
                         case 3: {
+                            FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+                            codigoValido = 0;
+                            while (!codigoValido) {
+                                printf("Ingrese el codigo del producto a modificar: ");
+                                fflush(stdin);
+                                getline(cin, code);
+                                strcpy(code_char, code.c_str());
+                                codigoValido = validarCodigo(code_char);
+                                if (!codigoValido) {
+                                    cout << "Usted ingreso un codigo invalido!!!" << endl;
+                                    cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
+                                }
+                            }
+                            cambioProducto(code);
                             break;
                         }
                         case 4: {
+                            FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+                            codigoValido = 0;
+                            while (!codigoValido) {
+                                printf("Ingrese el codigo del producto a buscar: ");
+                                fflush(stdin);
+                                getline(cin, code);
+                                strcpy(code_char, code.c_str());
+                                codigoValido = validarCodigo(code_char);
+                                if (!codigoValido) {
+                                    cout << "Usted ingreso un codigo invalido!!!" << endl;
+                                    cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
+                                }
+                            }
+                            consultaProducto(code);
                             break;
                         }
                         case 5: {
