@@ -1312,9 +1312,17 @@ void reporteDeVentasPantalla() {
             }
         }
         cout << setw(10) << left << t->product.costoComprado;
-        pc += t->product.costoComprado;
+
         cout << setw(10) << left << t->product.costoVendido;
-        pv += t->product.costoVendido;
+
+        if (venta.esVenta) {
+            pc += (t->product.costoComprado * venta.cantidad);
+            pv += (t->product.costoVendido * venta.cantidad);
+        }
+        else {
+            pc -= (t->product.costoComprado * venta.cantidad);
+            pv -= (t->product.costoVendido * venta.cantidad);
+        }
         cout << setw(10) << left << venta.vendedor;
         cout << endl;
 
@@ -1322,6 +1330,11 @@ void reporteDeVentasPantalla() {
     }
     cout << endl;
     fclose(arch);
+
+    cout << endl;
+    cout << "Inversión: " << pc;
+    cout << "Dinero total recaudado de las ventas: " << pv;
+    cout << "Ganancia: " << pc - pv;
 }
 
 void reporteDeProveedoresPantalla() {
