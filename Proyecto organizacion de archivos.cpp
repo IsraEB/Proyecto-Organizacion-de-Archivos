@@ -1332,9 +1332,9 @@ void reporteDeVentasPantalla() {
     fclose(arch);
 
     cout << endl;
-    cout << "Inversión: " << pc;
-    cout << "Dinero total recaudado de las ventas: " << pv;
-    cout << "Ganancia: " << pc - pv;
+    cout << "Inversión: " << pc << endl;
+    cout << "Dinero total recaudado de las ventas: " << pv << endl;
+    cout << "Ganancia: " << pc - pv << endl;
 }
 
 void reporteDeProveedoresPantalla() {
