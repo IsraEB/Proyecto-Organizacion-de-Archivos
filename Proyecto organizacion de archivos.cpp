@@ -171,7 +171,7 @@ typedef struct
     float costoComprado;
     float costoVendido;
     int existencia;
-
+    int unidadesCompradas;
 } tproducto;
 
 struct node {
@@ -263,7 +263,7 @@ void writeFile() {
     FILE *arch;
     arch = fopen("productos.dat", "w+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo productos.dat no se pudo generar" << endl;
         continuar();
         exit(1);
     }
@@ -299,7 +299,7 @@ void altaProducto() {
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
     while (!codigoValido) {
-        printf("Ingrese el codigo del producto: ");
+        printf("Ingrese el código del producto: ");
         fflush(stdin);
         cin.getline(producto.codigo, 7, '\n');
         codigoValido = validarCodigo(producto.codigo);
@@ -328,7 +328,8 @@ void altaProducto() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo proveedores.dat no encontrado" << endl;
+        cout << "Agregue proveedores" << endl;
         cout << "Se cancela todo" << endl;
         return;
     }
@@ -369,6 +370,8 @@ void altaProducto() {
     cout << "Ingrese cuantas unidades se compraron: ";
     producto.existencia = pedirEntero("");
 
+    producto.unidadesCompradas = producto.existencia;
+
     int n = hashFunction(producto.codigo);
 
     if (hashTable[n] == NULL) {
@@ -393,7 +396,7 @@ void altaProducto() {
 void bajaProducto(string code) {
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese codigo";
+        cout << "No existe el producto con ese código";
     }
     else {
         bool existe = false;
@@ -406,6 +409,7 @@ void bajaProducto(string code) {
                 cout << "Precio al que se compró: " << t->product.costoComprado << endl;
                 cout << "Precio al que se vende: " << t->product.costoVendido << endl;
                 cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Unidades compradas: " << t->product.unidadesCompradas << endl;
                 cout << "Marca: " << t->product.marca << endl;
                 cout << "Modelo: " << t->product.modelo << endl;
                 cout << "Proveedor: " << t->product.proveedor << endl;
@@ -415,7 +419,7 @@ void bajaProducto(string code) {
                 cout << "Producto eliminado" << endl;
             }
             else {
-                cout << "El producto con ese codigo no existe" << endl;
+                cout << "El producto con ese código no existe" << endl;
             }
         }
         else {
@@ -426,6 +430,7 @@ void bajaProducto(string code) {
                     cout << "Precio al que se compró: " << t->product.costoComprado << endl;
                     cout << "Precio al que se vende: " << t->product.costoVendido << endl;
                     cout << "Existencia: " << t->product.existencia << endl;
+                    cout << "Unidades compradas: " << t->product.unidadesCompradas << endl;
                     cout << "Marca: " << t->product.marca << endl;
                     cout << "Modelo: " << t->product.modelo << endl;
                     cout << "Proveedor: " << t->product.proveedor << endl;
@@ -439,7 +444,7 @@ void bajaProducto(string code) {
                 i++;
             }
             if (!existe) {
-                cout << "El producto con ese codigo no existe" << endl;
+                cout << "El producto con ese código no existe" << endl;
             }
             cout << endl;
         }
@@ -450,7 +455,7 @@ void bajaProducto(string code) {
 void cambioProducto(string code) {
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese codigo";
+        cout << "No existe el producto con ese código";
     }
     else {
         bool existe = false;
@@ -465,6 +470,7 @@ void cambioProducto(string code) {
                 cout << "Precio al que se compró: " << t->product.costoComprado << endl;
                 cout << "Precio al que se vende: " << t->product.costoVendido << endl;
                 cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Unidades compradas: " << t->product.unidadesCompradas << endl;
                 cout << "Marca: " << t->product.marca << endl;
                 cout << "Modelo: " << t->product.modelo << endl;
                 cout << "Proveedor: " << t->product.proveedor << endl;
@@ -486,6 +492,39 @@ void cambioProducto(string code) {
                 cout << "Ingrese el proveedor del producto: ";
                 cin.getline(t->product.proveedor, 20, '\n');
 
+                FILE *arch;
+                arch = fopen("proveedores.dat", "r+b");
+                if (arch == NULL) {
+                    cout << "Archivo proveedores.dat no encontrado" << endl;
+                    cout << "Agregue proveedores" << endl;
+                    cout << "Se cancela todo" << endl;
+                    return;
+                }
+                FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
+
+                string cod = t->product.proveedor;
+                Proveedor proveedor;
+                int existe = 0;
+                fread(&proveedor, sizeof(Proveedor), 1, arch);
+                while (!feof(arch)) {
+                    if (cod == proveedor.clave) {
+                        printf("%s : ", proveedor.clave);
+                        printf("%s : ", proveedor.nombre);
+                        cout << proveedor.telefono << endl;
+
+                        existe = 1;
+                        break;
+                    }
+                    fread(&proveedor, sizeof(Proveedor), 1, arch);
+                }
+                if (existe == 0) {
+                    printf("No existe un proveedor con dicha clave\n");
+                    cout << "Se cancela todo" << endl;
+                    return;
+                }
+
+                fclose(arch);
+
                 fflush(stdin);
                 cout << "Ingrese el precio al que se compró el producto: ";
                 t->product.costoComprado = pedirFlotante("");
@@ -497,12 +536,14 @@ void cambioProducto(string code) {
                 fflush(stdin);
                 cout << "Ingrese cuantas unidades se compraron: ";
                 t->product.existencia = pedirEntero("");
+
+                t->product.unidadesCompradas = t->product.existencia;
             }
             t = t->next;
             i++;
         }
         if (!existe) {
-            cout << "El producto con ese codigo no existe" << endl;
+            cout << "El producto con ese código no existe" << endl;
         }
         cout << endl;
     }
@@ -512,7 +553,7 @@ void cambioProducto(string code) {
 void consultaProducto(string code) {
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese codigo";
+        cout << "No existe el producto con ese código";
     }
     else {
         bool existe = false;
@@ -527,6 +568,7 @@ void consultaProducto(string code) {
                 cout << "Precio al que se compró: " << t->product.costoComprado << endl;
                 cout << "Precio al que se vende: " << t->product.costoVendido << endl;
                 cout << "Existencia: " << t->product.existencia << endl;
+                cout << "Unidades compradas: " << t->product.unidadesCompradas << endl;
                 cout << "Marca: " << t->product.marca << endl;
                 cout << "Modelo: " << t->product.modelo << endl;
                 cout << "Proveedor: " << t->product.proveedor << endl;
@@ -536,7 +578,7 @@ void consultaProducto(string code) {
             i++;
         }
         if (!existe) {
-            cout << "El producto con ese codigo no existe" << endl;
+            cout << "El producto con ese código no existe" << endl;
         }
         cout << endl;
     }
@@ -550,7 +592,7 @@ void altaProveedor() {
     FILE *arch;
     arch = fopen("proveedores.dat", "ab");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo proveedores.dat no se pudo generar" << endl;
         return;
     }
 
@@ -580,7 +622,8 @@ void bajaProveedor() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo proveedores.dat no encontrado" << endl;
+        cout << "Agregue proveedores" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -622,7 +665,8 @@ void cambioProveedor() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo proveedores.dat no encontrado" << endl;
+        cout << "Agregue proveedores" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -666,7 +710,8 @@ void consultaProveedor() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo proveedores.dat no encontrado" << endl;
+        cout << "Agregue proveedores" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -708,7 +753,7 @@ void altaVendedor() {
     FILE *arch;
     arch = fopen("vendedores.dat", "ab");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo vendedores.dat no pudo ser generado" << endl;
         return;
     }
 
@@ -736,7 +781,8 @@ void bajaVendedor() {
     FILE *arch;
     arch = fopen("vendedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo vendedores.dat no encontrado" << endl;
+        cout << "Agregue vendedores" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -779,7 +825,8 @@ void cambioVendedor() {
     FILE *arch;
     arch = fopen("vendedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo vendedores.dat no encontrado" << endl;
+        cout << "Agregue vendedores" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -821,7 +868,8 @@ void consultaVendedor() {
     FILE *arch;
     arch = fopen("vendedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo vendedores.dat no encontrado" << endl;
+        cout << "Agregue vendedores" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -868,7 +916,7 @@ void altaVenta() {
     FILE *arch;
     arch = fopen("ventas.dat", "ab");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo ventas.dat no pudo ser generado" << endl;
         return;
     }
 
@@ -902,7 +950,7 @@ void altaVenta() {
     bool codigoValido = 0;
 
     while (!codigoValido) {
-        printf("Ingrese el codigo del producto: ");
+        printf("Ingrese el código del producto: ");
         fflush(stdin);
         cin.getline(venta.clave, 7, '\n');
         codigoValido = validarCodigo(venta.clave);
@@ -920,7 +968,7 @@ void altaVenta() {
 
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese codigo";
+        cout << "No existe el producto con ese código";
         cout << "Se cancela todo" << endl;
         return;
     }
@@ -949,7 +997,7 @@ void altaVenta() {
             i++;
         }
         if (!existe) {
-            cout << "El producto con ese codigo no existe" << endl;
+            cout << "El producto con ese código no existe" << endl;
             cout << "Se cancela todo" << endl;
             return;
         }
@@ -982,7 +1030,7 @@ void altaVenta() {
     }
 
     fflush(stdin);
-    cout << "Digite el codigo numerico del vendedor: ";
+    cout << "Digite el código numerico del vendedor: ";
     venta.vendedor = pedirEntero("");
 
     FILE *archV;
@@ -1027,7 +1075,7 @@ void bajaVenta() {
     FILE *arch;
     arch = fopen("ventas.dat", "ab");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo ventas.dat no se pudo generar" << endl;
         return;
     }
 
@@ -1061,7 +1109,7 @@ void bajaVenta() {
     bool codigoValido = 0;
 
     while (!codigoValido) {
-        printf("Ingrese el codigo del producto: ");
+        printf("Ingrese el código del producto: ");
         fflush(stdin);
         cin.getline(venta.clave, 7, '\n');
         codigoValido = validarCodigo(venta.clave);
@@ -1077,7 +1125,7 @@ void bajaVenta() {
 
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese codigo";
+        cout << "No existe el producto con ese código";
         cout << "Se cancela todo" << endl;
         return;
     }
@@ -1104,7 +1152,7 @@ void bajaVenta() {
             i++;
         }
         if (!existe) {
-            cout << "El producto con ese codigo no existe" << endl;
+            cout << "El producto con ese código no existe" << endl;
             cout << "Se cancela todo" << endl;
             return;
         }
@@ -1114,7 +1162,7 @@ void bajaVenta() {
     fflush(stdin);
     venta.cantidad = pedirEntero("Digite la cantidad de productos en el reembolzo: ");
 
-    if (venta.cantidad <= 0) {
+    if (venta.cantidad <= 0 || venta.cantidad > t->product.unidadesCompradas) {
         if (venta.cantidad == 0) {
             cout << "No puede reembolzar 0 productos" << endl;
             cout << "Se cancela todo" << endl;
@@ -1125,6 +1173,11 @@ void bajaVenta() {
             cout << "Se cancela todo" << endl;
             return;
         }
+        if (venta.cantidad > t->product.unidadesCompradas) {
+            cout << "Está tratando de reembolzar más de lo que se compró" << endl;
+            cout << "Se cancela todo" << endl;
+            return;
+        }
     }
     else {
         t->product.existencia += venta.cantidad;
@@ -1132,7 +1185,7 @@ void bajaVenta() {
     }
 
     fflush(stdin);
-    cout << "Digite el codigo numerico del vendedor: ";
+    cout << "Digite el código numerico del vendedor: ";
     venta.vendedor = pedirEntero("");
 
     FILE *archV;
@@ -1177,7 +1230,7 @@ void consultaVenta() {
     FILE *arch;
     arch = fopen("ventas.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo ventas.dat no encontrado" << endl;
         return;
     }
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -1222,6 +1275,7 @@ void inventarioPantalla() {
     cout << setw(20) << left << "Precio Venta";
     cout << setw(20) << left << "Precio Compra";
     cout << setw(20) << left << "Existencia";
+    cout << setw(20) << left << "Unidades compradas";
     cout << setw(20) << left << "Proveedor";
     cout << endl;
 
@@ -1242,6 +1296,7 @@ void inventarioPantalla() {
             cout << setw(20) << left << t->product.costoVendido;
             cout << setw(20) << left << t->product.costoComprado;
             cout << setw(20) << left << t->product.existencia;
+            cout << setw(20) << left << t->product.unidadesCompradas;
             cout << setw(20) << left << t->product.proveedor;
             cout << endl;
             while (t->next != NULL) {
@@ -1253,6 +1308,7 @@ void inventarioPantalla() {
                 cout << setw(20) << left << t->product.costoVendido;
                 cout << setw(20) << left << t->product.costoComprado;
                 cout << setw(20) << left << t->product.existencia;
+                cout << setw(20) << left << t->product.unidadesCompradas;
                 cout << setw(20) << left << t->product.proveedor;
                 cout << endl;
             }
@@ -1269,7 +1325,7 @@ void reporteDeVentasPantalla() {
 
     arch = fopen("ventas.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo ventas.dat no encontrado" << endl;
         return;
     }
     for (int i = 0; i < ((10 * 7) + 15); i++) {
@@ -1313,7 +1369,7 @@ void reporteDeVentasPantalla() {
         Tlist t;
         int n = hashFunction(code);
         if (hashTable[n] == NULL) {
-            cout << "No existe el producto con ese codigo" << endl;
+            cout << "No existe el producto con ese código" << endl;
         }
         else {
             bool existe = false;
@@ -1328,7 +1384,7 @@ void reporteDeVentasPantalla() {
                 i++;
             }
             if (!existe) {
-                cout << "El producto con ese codigo no existe" << endl;
+                cout << "El producto con ese código no existe" << endl;
             }
         }
         cout << setw(10) << left << t->product.costoComprado;
@@ -1362,7 +1418,7 @@ void reporteDeProveedoresPantalla() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo no encontrado" << endl;
+        cout << "Archivo proveedores.dat no encontrado" << endl;
         return;
     }
     for (int i = 0; i < ((20 * 3)); i++) {
@@ -1414,6 +1470,7 @@ void inventarioArchivo() {
     arch << setw(20) << left << "Precio Venta";
     arch << setw(20) << left << "Precio Compra";
     arch << setw(20) << left << "Existencia";
+    arch << setw(20) << left << "Unidades compradas";
     arch << setw(20) << left << "Proveedor";
     arch << endl;
 
@@ -1434,6 +1491,7 @@ void inventarioArchivo() {
             arch << setw(20) << left << t->product.costoVendido;
             arch << setw(20) << left << t->product.costoComprado;
             arch << setw(20) << left << t->product.existencia;
+            arch << setw(20) << left << t->product.unidadesCompradas;
             arch << setw(20) << left << t->product.proveedor;
             arch << endl;
             while (t->next != NULL) {
@@ -1445,6 +1503,7 @@ void inventarioArchivo() {
                 arch << setw(20) << left << t->product.costoVendido;
                 arch << setw(20) << left << t->product.costoComprado;
                 arch << setw(20) << left << t->product.existencia;
+                arch << setw(20) << left << t->product.unidadesCompradas;
                 arch << setw(20) << left << t->product.proveedor;
                 arch << endl;
             }
@@ -1465,7 +1524,7 @@ void reporteDeVentasArchivo() {
 
     arch = fopen("ventas.dat", "r+b");
     if (arch == NULL) {
-        archivo << "Archivo no encontrado" << endl;
+        archivo << "Archivo ventas.dat no encontrado" << endl;
         return;
     }
     for (int i = 0; i < ((10 * 7) + 15); i++) {
@@ -1509,7 +1568,7 @@ void reporteDeVentasArchivo() {
         Tlist t;
         int n = hashFunction(code);
         if (hashTable[n] == NULL) {
-            archivo << "No existe el producto con ese codigo" << endl;
+            archivo << "No existe el producto con ese código" << endl;
         }
         else {
             bool existe = false;
@@ -1524,7 +1583,7 @@ void reporteDeVentasArchivo() {
                 i++;
             }
             if (!existe) {
-                archivo << "El producto con ese codigo no existe" << endl;
+                archivo << "El producto con ese código no existe" << endl;
             }
         }
         archivo << setw(10) << left << t->product.costoComprado;
@@ -1562,7 +1621,7 @@ void reporteDeProveedoresArchivo() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        archivo << "Archivo no encontrado" << endl;
+        archivo << "Archivo proveedores.dat no encontrado" << endl;
         return;
     }
     for (int i = 0; i < ((20 * 3)); i++) {
