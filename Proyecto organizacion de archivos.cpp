@@ -103,6 +103,23 @@ int pedirEntero(string peticion) {
     }
 }
 
+unsigned long long pedirUnsignedLongLong(string peticion) {
+    string str;
+    cout << peticion;
+
+    fflush(stdin);
+    cin >> str;
+    fflush(stdin);
+
+    try {
+        return stoull(str);
+    }
+    catch (...) {
+        cout << "Debe ingresar un entero!" << endl;
+        return pedirEntero(peticion);
+    }
+}
+
 float pedirFlotante(string peticion) {
     string str;
     cout << peticion;
@@ -553,7 +570,7 @@ void altaProveedor() {
 
     fflush(stdin);
     cout << "Digite el número telefónico del proveedor: ";
-    proveedor.telefono = pedirEntero("");
+    proveedor.telefono = pedirUnsignedLongLong("");
 
     fwrite(&proveedor, sizeof(Proveedor), 1, arch);
     fclose(arch);
@@ -629,7 +646,7 @@ void cambioProveedor() {
 
             fflush(stdin);
             cout << "Digite el número telefónico del proveedor: ";
-            proveedor.telefono = pedirEntero("");
+            proveedor.telefono = pedirUnsignedLongLong("");
 
             int pos = ftell(arch) - sizeof(Proveedor);
             fseek(arch, pos, SEEK_SET);
@@ -1337,7 +1354,7 @@ void reporteDeVentasPantalla() {
     cout << endl;
     cout << "Inversión: " << pc << endl;
     cout << "Dinero total recaudado de las ventas: " << pv << endl;
-    cout << "Ganancia: " << pc - pv << endl;
+    cout << "Ganancia: " << pv - pc << endl;
 }
 
 void reporteDeProveedoresPantalla() {
@@ -1533,7 +1550,7 @@ void reporteDeVentasArchivo() {
     archivo << endl;
     archivo << "Inversión: " << pc << endl;
     archivo << "Dinero total recaudado de las ventas: " << pv << endl;
-    archivo << "Ganancia: " << pc - pv << endl;
+    archivo << "Ganancia: " << pv - pc << endl;
     archivo.close();
 }
 
