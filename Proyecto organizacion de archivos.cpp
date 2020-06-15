@@ -6,6 +6,7 @@
 #include <windows.h>
 
 #include <ctime>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -1191,6 +1192,7 @@ void consultaVenta() {
  ***************************************/
 
 void inventarioPantalla() {
+    cout << "Inventario" << endl;
     for (int i = 0; i < (10 + (20 * 7)); i++) {
         cout << "-";
     }
@@ -1242,6 +1244,7 @@ void inventarioPantalla() {
 }
 
 void reporteDeVentasPantalla() {
+    cout << "Reporte de ventas" << endl;
     FILE *arch;
 
     int pc = 0;
@@ -1338,6 +1341,7 @@ void reporteDeVentasPantalla() {
 }
 
 void reporteDeProveedoresPantalla() {
+    cout << "Reporte de proveedores" << endl;
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
@@ -1377,12 +1381,200 @@ void reporteDeProveedoresPantalla() {
  ***************************************/
 
 void inventarioArchivo() {
+    ofstream arch;
+    arch.open("Inventario.txt");
+
+    arch << "Inventario" << endl;
+    for (int i = 0; i < (10 + (20 * 7)); i++) {
+        arch << "-";
+    }
+    arch << endl;
+
+    arch << setw(10) << left << "Clave";
+    arch << setw(20) << left << "Modelo";
+    arch << setw(20) << left << "Marca";
+    arch << setw(20) << left << "Color";
+    arch << setw(20) << left << "Precio Venta";
+    arch << setw(20) << left << "Precio Compra";
+    arch << setw(20) << left << "Existencia";
+    arch << setw(20) << left << "Proveedor";
+    arch << endl;
+
+    for (int i = 0; i < (10 + (20 * 7)); i++) {
+        arch << "-";
+    }
+    arch << endl;
+
+    for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
+        if (hashTable[i] == NULL) {
+        }
+        else {
+            Tlist t = hashTable[i];
+            arch << setw(10) << left << t->product.codigo;
+            arch << setw(20) << left << t->product.modelo;
+            arch << setw(20) << left << t->product.marca;
+            arch << setw(20) << left << t->product.color;
+            arch << setw(20) << left << t->product.costoVendido;
+            arch << setw(20) << left << t->product.costoComprado;
+            arch << setw(20) << left << t->product.existencia;
+            arch << setw(20) << left << t->product.proveedor;
+            arch << endl;
+            while (t->next != NULL) {
+                t = t->next;
+                arch << setw(10) << left << t->product.codigo;
+                arch << setw(20) << left << t->product.modelo;
+                arch << setw(20) << left << t->product.marca;
+                arch << setw(20) << left << t->product.color;
+                arch << setw(20) << left << t->product.costoVendido;
+                arch << setw(20) << left << t->product.costoComprado;
+                arch << setw(20) << left << t->product.existencia;
+                arch << setw(20) << left << t->product.proveedor;
+                arch << endl;
+            }
+        }
+    }
+    arch.close();
 }
 
 void reporteDeVentasArchivo() {
+    ofstream archivo;
+    archivo.open("Reporte de ventas.txt");
+
+    archivo << "Reporte de ventas" << endl;
+    FILE *arch;
+
+    int pc = 0;
+    int pv = 0;
+
+    arch = fopen("ventas.dat", "r+b");
+    if (arch == NULL) {
+        archivo << "Archivo no encontrado" << endl;
+        return;
+    }
+    for (int i = 0; i < ((10 * 7) + 15); i++) {
+        archivo << "-";
+    }
+    archivo << endl;
+
+    archivo << setw(10) << left << "Tipo";
+    archivo << setw(10) << left << "No.";
+    archivo << setw(15) << left << "Fecha";
+    archivo << setw(10) << left << "Clave";
+    archivo << setw(10) << left << "Cantidad";
+    archivo << setw(10) << left << "Precio Comprado";
+    archivo << setw(10) << left << "Precio Vendido";
+    archivo << setw(10) << left << "Vendedor";
+    archivo << endl;
+
+    for (int i = 0; i < ((10 * 7) + 15); i++) {
+        archivo << "-";
+    }
+    archivo << endl;
+
+    Venta venta;
+    fread(&venta, sizeof(Venta), 1, arch);
+    while (!feof(arch)) {
+        if (venta.esVenta) {
+            archivo << setw(10) << left << "Venta";
+        }
+        else {
+            archivo << setw(10) << left << "Reembolzo";
+        }
+
+        string fecha = to_string(venta.dia) + "/" + to_string(venta.mes) + "/" + to_string(venta.anho);
+
+        archivo << setw(10) << left << venta.numero;
+        archivo << setw(15) << left << fecha;
+        archivo << setw(10) << left << venta.clave;
+        archivo << setw(10) << left << venta.cantidad;
+
+        string code = venta.clave;
+        Tlist t;
+        int n = hashFunction(code);
+        if (hashTable[n] == NULL) {
+            archivo << "No existe el producto con ese codigo" << endl;
+        }
+        else {
+            bool existe = false;
+            t = hashTable[n];
+            int i = 1;
+            while (t != NULL) {
+                existe = true;
+                if (t->product.codigo == code) {
+                    break;
+                }
+                t = t->next;
+                i++;
+            }
+            if (!existe) {
+                archivo << "El producto con ese codigo no existe" << endl;
+            }
+        }
+        archivo << setw(10) << left << t->product.costoComprado;
+
+        archivo << setw(10) << left << t->product.costoVendido;
+
+        if (venta.esVenta) {
+            pc += (t->product.costoComprado * venta.cantidad);
+            pv += (t->product.costoVendido * venta.cantidad);
+        }
+        else {
+            pc -= (t->product.costoComprado * venta.cantidad);
+            pv -= (t->product.costoVendido * venta.cantidad);
+        }
+        archivo << setw(10) << left << venta.vendedor;
+        archivo << endl;
+
+        fread(&venta, sizeof(Venta), 1, arch);
+    }
+    archivo << endl;
+    fclose(arch);
+
+    archivo << endl;
+    archivo << "Inversión: " << pc << endl;
+    archivo << "Dinero total recaudado de las ventas: " << pv << endl;
+    archivo << "Ganancia: " << pc - pv << endl;
+    archivo.close();
 }
 
 void reporteDeProveedoresArchivo() {
+    ofstream archivo;
+    archivo.open("Reporte de proveedores.txt");
+
+    archivo << "Reporte de proveedores" << endl;
+    FILE *arch;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch == NULL) {
+        archivo << "Archivo no encontrado" << endl;
+        return;
+    }
+    for (int i = 0; i < ((20 * 3)); i++) {
+        archivo << "-";
+    }
+    archivo << endl;
+
+    archivo << setw(20) << left << "Clave";
+    archivo << setw(20) << left << "Nombre";
+    archivo << setw(20) << left << "Teléfono";
+    archivo << endl;
+
+    for (int i = 0; i < ((20 * 3)); i++) {
+        archivo << "-";
+    }
+    archivo << endl;
+
+    Proveedor proveedor;
+    fread(&proveedor, sizeof(Proveedor), 1, arch);
+    while (!feof(arch)) {
+        archivo << setw(20) << left << proveedor.clave;
+        archivo << setw(20) << left << proveedor.nombre;
+        archivo << setw(20) << left << proveedor.telefono;
+
+        fread(&proveedor, sizeof(Proveedor), 1, arch);
+    }
+    archivo << endl;
+    fclose(arch);
+    archivo.close();
 }
 
 /****************************************
