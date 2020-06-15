@@ -1991,7 +1991,11 @@ void compactar() {
  ***************************************/
 
 int main() {
-    setlocale(LC_ALL, "");
+    // Establecer el idioma a español
+    setlocale(LC_ALL, "es_ES");  // Cambiar locale - Suficiente para máquinas Linux
+    SetConsoleCP(65001);         // Cambiar STDIN -  Para máquinas Windows
+    SetConsoleOutputCP(65001);   // Cambiar STDOUT - Para máquinas Windows
+
     fflush(stdin);
 
     initializeHashTable();
