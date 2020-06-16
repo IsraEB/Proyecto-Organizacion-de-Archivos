@@ -191,9 +191,18 @@ typedef struct {
  ************/
 
 int hashFunction(string code) {
-    string number = code.substr(2, 2);
-    int n = atoi(number.c_str());
-    return n;
+    try {
+        string number = code.substr(2, 2);
+        int n = atoi(number.c_str());
+        return n;
+    }
+    catch (...) {
+        cout << "Su productos.dat no correcsponde con el que se maneja en este programa" << endl;
+        cout << "Borrelo o cambielo de lugar" << endl;
+        continuar();
+        exit(0);
+    }
+    return 0;
 }
 
 Tlist hashTable[NUMBER_OF_SLOTS];
@@ -396,7 +405,7 @@ void altaProducto() {
 void bajaProducto(string code) {
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese código";
+        cout << "No existe el producto con ese código" << endl;
     }
     else {
         bool existe = false;
@@ -455,7 +464,7 @@ void bajaProducto(string code) {
 void cambioProducto(string code) {
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese código";
+        cout << "No existe el producto con ese código" << endl;
     }
     else {
         bool existe = false;
@@ -553,7 +562,7 @@ void cambioProducto(string code) {
 void consultaProducto(string code) {
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese código";
+        cout << "No existe el producto con ese código" << endl;
     }
     else {
         bool existe = false;
@@ -968,7 +977,7 @@ void altaVenta() {
 
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese código";
+        cout << "No existe el producto con ese código" << endl;
         cout << "Se cancela todo" << endl;
         return;
     }
@@ -1125,7 +1134,7 @@ void bajaVenta() {
 
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
-        cout << "No existe el producto con ese código";
+        cout << "No existe el producto con ese código" << endl;
         cout << "Se cancela todo" << endl;
         return;
     }
