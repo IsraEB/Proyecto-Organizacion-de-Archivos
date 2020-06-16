@@ -197,7 +197,7 @@ int hashFunction(string code) {
         return n;
     }
     catch (...) {
-        cout << "Su productos.dat no correcsponde con el que se maneja en este programa" << endl;
+        cout << "Su productos.dat no corresponde con el que se maneja en este programa" << endl;
         cout << "Borrelo o cambielo de lugar" << endl;
         continuar();
         exit(0);
