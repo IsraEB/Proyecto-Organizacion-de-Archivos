@@ -350,10 +350,6 @@ void altaProducto() {
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
-            printf("%s : ", proveedor.clave);
-            printf("%s : ", proveedor.nombre);
-            cout << proveedor.telefono << endl;
-
             existe = 1;
             break;
         }
@@ -517,10 +513,6 @@ void cambioProducto(string code) {
                 fread(&proveedor, sizeof(Proveedor), 1, arch);
                 while (!feof(arch)) {
                     if (cod == proveedor.clave) {
-                        printf("%s : ", proveedor.clave);
-                        printf("%s : ", proveedor.nombre);
-                        cout << proveedor.telefono << endl;
-
                         existe = 1;
                         break;
                     }
@@ -935,15 +927,6 @@ void altaVenta() {
 
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
-    // int numero;
-    // unsigned int dia;
-    // unsigned int mes;
-    // unsigned int anho;
-    // char clave[20];
-    // int cantidad;
-    // int costo;
-    // int vendedor;
-
     fflush(stdin);
     venta.numero = pedirEntero("Digite el numero de venta: ");
 
@@ -988,18 +971,6 @@ void altaVenta() {
         while (t != NULL) {
             if (t->product.codigo == code) {
                 existe = true;
-                cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
-
-                cout << "Código: " << t->product.codigo << endl;
-                cout << "Color: " << t->product.color << endl;
-                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
-                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
-                cout << "Existencia: " << t->product.existencia << endl;
-                cout << "Marca: " << t->product.marca << endl;
-                cout << "Modelo: " << t->product.modelo << endl;
-                cout << "Proveedor: " << t->product.proveedor << endl;
-                cout << endl;
-
                 break;
             }
             t = t->next;
@@ -1059,10 +1030,6 @@ void altaVenta() {
     fread(&vendedor, sizeof(Vendedor), 1, archV);
     while (!feof(archV)) {
         if (cod == vendedor.clave) {
-            cout << vendedor.clave;
-            printf(": %s : ", vendedor.nombre);
-            cout << vendedor.salario << endl;
-
             existe = 1;
             break;
         }
@@ -1093,15 +1060,6 @@ void bajaVenta() {
     venta.esVenta = false;
 
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
-
-    // int numero;
-    // unsigned int dia;
-    // unsigned int mes;
-    // unsigned int anho;
-    // char clave[20];
-    // int cantidad;
-    // int costo;
-    // int vendedor;
 
     fflush(stdin);
     venta.numero = pedirEntero("Digite el numero del reembolzo: ");
@@ -1143,18 +1101,8 @@ void bajaVenta() {
         t = hashTable[n];
         int i = 1;
         while (t != NULL) {
-            existe = true;
-            cout << "El producto esta en el indice " << n << " de la tabla en la posicion " << i << endl;
             if (t->product.codigo == code) {
-                cout << "Código: " << t->product.codigo << endl;
-                cout << "Color: " << t->product.color << endl;
-                cout << "Precio al que se compró: " << t->product.costoComprado << endl;
-                cout << "Precio al que se vende: " << t->product.costoVendido << endl;
-                cout << "Existencia: " << t->product.existencia << endl;
-                cout << "Marca: " << t->product.marca << endl;
-                cout << "Modelo: " << t->product.modelo << endl;
-                cout << "Proveedor: " << t->product.proveedor << endl;
-                cout << endl;
+                existe = true;
                 break;
             }
             t = t->next;
@@ -1214,10 +1162,6 @@ void bajaVenta() {
     fread(&vendedor, sizeof(Vendedor), 1, archV);
     while (!feof(archV)) {
         if (cod == vendedor.clave) {
-            cout << vendedor.clave;
-            printf(": %s : ", vendedor.nombre);
-            cout << vendedor.salario << endl;
-
             existe = 1;
             break;
         }
