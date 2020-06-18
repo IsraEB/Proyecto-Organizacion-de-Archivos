@@ -314,7 +314,7 @@ void altaProducto() {
     while (!codigoValido) {
         printf("Ingrese el código del producto: ");
         fflush(stdin);
-        cin.getline(producto.codigo, 7, '\n');
+        gets(producto.codigo);
         codigoValido = validarCodigo(producto.codigo);
         if (!codigoValido) {
             cout << "Usted ingreso un codigo invalido!!!" << endl;
