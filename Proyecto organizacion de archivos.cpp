@@ -391,6 +391,11 @@ void altaProducto() {
         q->next = NULL;
         t = hashTable[n];
         while (t->next != NULL) {
+            if (t->product.codigo == producto.codigo) {
+                cout << "Un producto con ese código ya existe" << endl;
+                cout << "Se cancela todo";
+                return;
+            }
             t = t->next;
         }
         t->next = q;
@@ -903,7 +908,7 @@ void consultaVendedor() {
 
 typedef struct {
     bool esVenta;
-    int numero;
+    unsigned long long numero;
     unsigned int dia;
     unsigned int mes;
     unsigned int anho;
@@ -927,18 +932,6 @@ void altaVenta() {
 
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
-    fflush(stdin);
-    venta.numero = pedirEntero("Digite el numero de venta: ");
-
-    fflush(stdin);
-    venta.dia = pedirEntero("Digite el día de la venta: ");
-
-    fflush(stdin);
-    venta.mes = pedirEntero("Digite el mes de la venta: ");
-
-    fflush(stdin);
-    venta.anho = pedirEntero("Digite el año de la venta: ");
-
     bool codigoValido = 0;
 
     while (!codigoValido) {
@@ -951,8 +944,6 @@ void altaVenta() {
             cout << "Un codigo correcto empieza con 2 letras y le siguen 4 numeros" << endl;
         }
     }
-
-    FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
     string code = venta.clave;
 
@@ -981,32 +972,33 @@ void altaVenta() {
             cout << "Se cancela todo" << endl;
             return;
         }
-        cout << endl;
     }
 
-    fflush(stdin);
-    venta.cantidad = pedirEntero("Digite la cantidad vendida: ");
+    bool band = true;
 
-    if (t->product.existencia < venta.cantidad) {
-        cout << "Se están tratando de comprar" << venta.cantidad << "y solo hay " << t->product.existencia;
-        cout << "Se cancela todo" << endl;
-        return;
-    }
-    else if (venta.cantidad <= 0) {
-        if (venta.cantidad == 0) {
-            cout << "No puede vender 0 productos" << endl;
-            cout << "Se cancela todo" << endl;
+    while (band) {
+        fflush(stdin);
+        venta.cantidad = pedirEntero("Digite la cantidad vendida: ");
+
+        if (t->product.existencia < venta.cantidad) {
+            cout << "Se están tratando de comprar" << venta.cantidad << "y solo hay " << t->product.existencia;
             return;
         }
-        if (venta.cantidad < 0) {
-            cout << "No puede ingresar un número negativo" << endl;
-            cout << "Se cancela todo" << endl;
-            return;
+        else if (venta.cantidad <= 0) {
+            if (venta.cantidad == 0) {
+                cout << "No puede vender 0 productos" << endl;
+                return;
+            }
+            if (venta.cantidad < 0) {
+                cout << "No puede ingresar un número negativo" << endl;
+                return;
+            }
         }
-    }
-    else {
-        t->product.existencia -= venta.cantidad;
-        writeFile();
+        else {
+            band = false;
+            t->product.existencia -= venta.cantidad;
+            writeFile();
+        }
     }
 
     fflush(stdin);
@@ -1042,6 +1034,18 @@ void altaVenta() {
     }
 
     fclose(archV);
+
+    time_t now = time(0);
+
+    tm *ltm = localtime(&now);
+
+    venta.dia = ltm->tm_mday;
+    venta.mes = 1 + ltm->tm_mon;
+    venta.anho = 1900 + ltm->tm_year;
+
+    string str = to_string(venta.anho - 2000) + to_string(venta.mes) + to_string(venta.dia) + to_string(1 + ltm->tm_hour) + to_string(1 + ltm->tm_min) + to_string(1 + ltm->tm_sec);
+
+    venta.numero = stoull(str);
 
     fwrite(&venta, sizeof(Venta), 1, arch);
     fclose(arch);
@@ -1061,18 +1065,6 @@ void bajaVenta() {
 
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
-    fflush(stdin);
-    venta.numero = pedirEntero("Digite el numero del reembolzo: ");
-
-    fflush(stdin);
-    venta.dia = pedirEntero("Digite el día del reembolzo: ");
-
-    fflush(stdin);
-    venta.mes = pedirEntero("Digite el mes del reembolzo ");
-
-    fflush(stdin);
-    venta.anho = pedirEntero("Digite el año del reembolzo: ");
-
     bool codigoValido = 0;
 
     while (!codigoValido) {
@@ -1113,32 +1105,33 @@ void bajaVenta() {
             cout << "Se cancela todo" << endl;
             return;
         }
-        cout << endl;
     }
 
-    fflush(stdin);
-    venta.cantidad = pedirEntero("Digite la cantidad de productos en el reembolzo: ");
+    bool band = true;
 
-    if (venta.cantidad <= 0 || venta.cantidad > t->product.unidadesCompradas) {
-        if (venta.cantidad == 0) {
-            cout << "No puede reembolzar 0 productos" << endl;
-            cout << "Se cancela todo" << endl;
-            return;
+    while (band) {
+        fflush(stdin);
+        venta.cantidad = pedirEntero("Digite la cantidad de productos en el reembolzo: ");
+
+        if (venta.cantidad <= 0 || venta.cantidad > t->product.unidadesCompradas) {
+            if (venta.cantidad == 0) {
+                cout << "No puede reembolzar 0 productos" << endl;
+                return;
+            }
+            if (venta.cantidad < 0) {
+                cout << "No puede ingresar un número negativo" << endl;
+                return;
+            }
+            if (venta.cantidad > t->product.unidadesCompradas) {
+                cout << "Está tratando de reembolzar más de lo que se compró" << endl;
+                return;
+            }
         }
-        if (venta.cantidad < 0) {
-            cout << "No puede ingresar un número negativo" << endl;
-            cout << "Se cancela todo" << endl;
-            return;
+        else {
+            band = false;
+            t->product.existencia += venta.cantidad;
+            writeFile();
         }
-        if (venta.cantidad > t->product.unidadesCompradas) {
-            cout << "Está tratando de reembolzar más de lo que se compró" << endl;
-            cout << "Se cancela todo" << endl;
-            return;
-        }
-    }
-    else {
-        t->product.existencia += venta.cantidad;
-        writeFile();
     }
 
     fflush(stdin);
@@ -1174,6 +1167,18 @@ void bajaVenta() {
     }
 
     fclose(archV);
+
+    time_t now = time(0);
+
+    tm *ltm = localtime(&now);
+
+    venta.dia = ltm->tm_mday;
+    venta.mes = 1 + ltm->tm_mon;
+    venta.anho = 1900 + ltm->tm_year;
+
+    string str = to_string(venta.anho - 2000) + to_string(venta.mes) + to_string(venta.dia) + to_string(1 + ltm->tm_hour) + to_string(1 + ltm->tm_min) + to_string(1 + ltm->tm_sec);
+
+    venta.numero = stoull(str);
 
     fwrite(&venta, sizeof(Venta), 1, arch);
     fclose(arch);
@@ -1216,7 +1221,7 @@ void consultaVenta() {
 
 void inventarioPantalla() {
     cout << "Inventario" << endl;
-    for (int i = 0; i < (10 + (20 * 7)); i++) {
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
         cout << "-";
     }
     cout << endl;
@@ -1232,7 +1237,7 @@ void inventarioPantalla() {
     cout << setw(20) << left << "Proveedor";
     cout << endl;
 
-    for (int i = 0; i < (10 + (20 * 7)); i++) {
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
         cout << "-";
     }
     cout << endl;
@@ -1267,36 +1272,40 @@ void inventarioPantalla() {
             }
         }
     }
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
+        cout << "-";
+    }
+    cout << endl;
 }
 
 void reporteDeVentasPantalla() {
     cout << "Reporte de ventas" << endl;
     FILE *arch;
 
-    int pc = 0;
-    int pv = 0;
+    float pc = 0;
+    float pv = 0;
 
     arch = fopen("ventas.dat", "r+b");
     if (arch == NULL) {
         cout << "Archivo ventas.dat no encontrado" << endl;
         return;
     }
-    for (int i = 0; i < ((10 * 7) + 15); i++) {
+    for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
         cout << "-";
     }
     cout << endl;
 
     cout << setw(10) << left << "Tipo";
-    cout << setw(10) << left << "No.";
+    cout << setw(13) << left << "No.";
     cout << setw(15) << left << "Fecha";
     cout << setw(10) << left << "Clave";
     cout << setw(10) << left << "Cantidad";
-    cout << setw(10) << left << "Precio Comprado";
-    cout << setw(10) << left << "Precio Vendido";
+    cout << setw(20) << left << "Precio Comprado";
+    cout << setw(20) << left << "Precio Vendido";
     cout << setw(10) << left << "Vendedor";
     cout << endl;
 
-    for (int i = 0; i < ((10 * 7) + 15); i++) {
+    for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
         cout << "-";
     }
     cout << endl;
@@ -1313,7 +1322,7 @@ void reporteDeVentasPantalla() {
 
         string fecha = to_string(venta.dia) + "/" + to_string(venta.mes) + "/" + to_string(venta.anho);
 
-        cout << setw(10) << left << venta.numero;
+        cout << setw(13) << left << venta.numero;
         cout << setw(15) << left << fecha;
         cout << setw(10) << left << venta.clave;
         cout << setw(10) << left << venta.cantidad;
@@ -1340,9 +1349,9 @@ void reporteDeVentasPantalla() {
                 cout << "El producto con ese código no existe" << endl;
             }
         }
-        cout << setw(10) << left << t->product.costoComprado;
+        cout << setw(20) << left << t->product.costoComprado;
 
-        cout << setw(10) << left << t->product.costoVendido;
+        cout << setw(20) << left << t->product.costoVendido;
 
         if (venta.esVenta) {
             pc += (t->product.costoComprado * venta.cantidad);
@@ -1357,13 +1366,15 @@ void reporteDeVentasPantalla() {
 
         fread(&venta, sizeof(Venta), 1, arch);
     }
-    cout << endl;
     fclose(arch);
 
-    cout << endl;
-    cout << "Inversión: " << pc << endl;
-    cout << "Dinero total recaudado de las ventas: " << pv << endl;
-    cout << "Ganancia: " << pv - pc << endl;
+    for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
+        cout << "-";
+    }
+
+    printf("\nInversión: %.2f \n", pc);
+    printf("Dinero total recaudado de las ventas: %.2f \n", pv);
+    printf("Ganancia: %.2f \n", pv - pc);
 }
 
 void reporteDeProveedoresPantalla() {
@@ -1399,6 +1410,10 @@ void reporteDeProveedoresPantalla() {
         fread(&proveedor, sizeof(Proveedor), 1, arch);
     }
     cout << endl;
+    for (int i = 0; i < ((20 * 3)); i++) {
+        cout << "-";
+    }
+    cout << endl;
     fclose(arch);
 }
 
@@ -1407,121 +1422,92 @@ void reporteDeProveedoresPantalla() {
  ***************************************/
 
 void inventarioArchivo() {
-    ofstream arch;
-    arch.open("Inventario.txt");
+    FILE *arch;
+    arch = fopen("Inventario.txt", "w");
 
-    arch << "Inventario" << endl;
-    for (int i = 0; i < (10 + (20 * 7)); i++) {
-        arch << "-";
+    fprintf(arch, "Inventario \n");
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
+        fprintf(arch, "-");
     }
-    arch << endl;
+    fprintf(arch, "\n");
 
-    arch << setw(10) << left << "Clave";
-    arch << setw(20) << left << "Modelo";
-    arch << setw(20) << left << "Marca";
-    arch << setw(20) << left << "Color";
-    arch << setw(20) << left << "Precio Venta";
-    arch << setw(20) << left << "Precio Compra";
-    arch << setw(20) << left << "Existencia";
-    arch << setw(20) << left << "Unidades compradas";
-    arch << setw(20) << left << "Proveedor";
-    arch << endl;
-
-    for (int i = 0; i < (10 + (20 * 7)); i++) {
-        arch << "-";
+    fprintf(arch, "%-10s %-20s %-20s %-20s %-20s %-20s %-20s %-20s %-20s\n", "Clave", "Modelo", "Marca", "Color", "Precio Venta", "Precio Compra", "Existencia", "Unidades compradas", "Proveedor");
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
+        fprintf(arch, "-");
     }
-    arch << endl;
+    fprintf(arch, "\n");
 
     for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
         if (hashTable[i] == NULL) {
         }
         else {
             Tlist t = hashTable[i];
-            arch << setw(10) << left << t->product.codigo;
-            arch << setw(20) << left << t->product.modelo;
-            arch << setw(20) << left << t->product.marca;
-            arch << setw(20) << left << t->product.color;
-            arch << setw(20) << left << t->product.costoVendido;
-            arch << setw(20) << left << t->product.costoComprado;
-            arch << setw(20) << left << t->product.existencia;
-            arch << setw(20) << left << t->product.unidadesCompradas;
-            arch << setw(20) << left << t->product.proveedor;
-            arch << endl;
+            fprintf(arch, "%-10s %-20s %-20s %-20s %-20.2f %-20.2f %-20d %-20d %-20s\n", t->product.codigo, t->product.modelo, t->product.marca, t->product.color, t->product.costoVendido, t->product.costoComprado, t->product.existencia, t->product.unidadesCompradas, t->product.proveedor);
+
             while (t->next != NULL) {
                 t = t->next;
-                arch << setw(10) << left << t->product.codigo;
-                arch << setw(20) << left << t->product.modelo;
-                arch << setw(20) << left << t->product.marca;
-                arch << setw(20) << left << t->product.color;
-                arch << setw(20) << left << t->product.costoVendido;
-                arch << setw(20) << left << t->product.costoComprado;
-                arch << setw(20) << left << t->product.existencia;
-                arch << setw(20) << left << t->product.unidadesCompradas;
-                arch << setw(20) << left << t->product.proveedor;
-                arch << endl;
+                fprintf(arch, "%-10s %-20s %-20s %-20s %-20.2f %-20.2f %-20d %-20d %-20s\n", t->product.codigo, t->product.modelo, t->product.marca, t->product.color, t->product.costoVendido, t->product.costoComprado, t->product.existencia, t->product.unidadesCompradas, t->product.proveedor);
             }
         }
     }
-    arch.close();
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
+        fprintf(arch, "-");
+    }
+    fprintf(arch, "\n");
+
+    fclose(arch);
 }
 
 void reporteDeVentasArchivo() {
-    ofstream archivo;
-    archivo.open("Reporte de ventas.txt");
+    FILE *archd, *archt;
 
-    archivo << "Reporte de ventas" << endl;
-    FILE *arch;
+    archt = fopen("Reporte de ventas.txt", "w");
+    archd = fopen("ventas.dat", "r+b");
 
-    int pc = 0;
-    int pv = 0;
+    fprintf(archt, "Reporte de ventas\n");
 
-    arch = fopen("ventas.dat", "r+b");
-    if (arch == NULL) {
-        archivo << "Archivo ventas.dat no encontrado" << endl;
+    float pc = 0;
+    float pv = 0;
+
+    if (archd == NULL) {
+        fprintf(archt, "Archivo ventas.dat no encontrado\n");
         return;
     }
-    for (int i = 0; i < ((10 * 7) + 15); i++) {
-        archivo << "-";
+    for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
+        fprintf(archt, "-");
     }
-    archivo << endl;
+    fprintf(archt, "\n");
 
-    archivo << setw(10) << left << "Tipo";
-    archivo << setw(10) << left << "No.";
-    archivo << setw(15) << left << "Fecha";
-    archivo << setw(10) << left << "Clave";
-    archivo << setw(10) << left << "Cantidad";
-    archivo << setw(10) << left << "Precio Comprado";
-    archivo << setw(10) << left << "Precio Vendido";
-    archivo << setw(10) << left << "Vendedor";
-    archivo << endl;
+    fprintf(archt, "%-10s %-13s %-15s %-10s %-10s %-20s %-20s %-10s\n", "Tipo", "No.", "Fecha", "Clave", "Cantidad", "Precio Comprado", "Precio Vendido", "Vendedor");
 
-    for (int i = 0; i < ((10 * 7) + 15); i++) {
-        archivo << "-";
+    for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
+        fprintf(archt, "-");
     }
-    archivo << endl;
+    fprintf(archt, "\n");
 
     Venta venta;
-    fread(&venta, sizeof(Venta), 1, arch);
-    while (!feof(arch)) {
+    fread(&venta, sizeof(Venta), 1, archd);
+    while (!feof(archd)) {
         if (venta.esVenta) {
-            archivo << setw(10) << left << "Venta";
+            fprintf(archt, "%-10s ", "Venta");
         }
         else {
-            archivo << setw(10) << left << "Reembolzo";
+            fprintf(archt, "%-10s ", "Reembolzo");
         }
 
         string fecha = to_string(venta.dia) + "/" + to_string(venta.mes) + "/" + to_string(venta.anho);
+        int k = fecha.length();
+        char fechav[k + 1];
 
-        archivo << setw(10) << left << venta.numero;
-        archivo << setw(15) << left << fecha;
-        archivo << setw(10) << left << venta.clave;
-        archivo << setw(10) << left << venta.cantidad;
+        strcpy(fechav, fecha.c_str());
+
+        fprintf(archt, "%-13d %-15s %-10s %-10d ", venta.numero, fechav, venta.clave, venta.cantidad);
 
         string code = venta.clave;
         Tlist t;
         int n = hashFunction(code);
         if (hashTable[n] == NULL) {
-            archivo << "No existe el producto con ese código" << endl;
+            fprintf(archt, "No existe el producto con ese código\n");
         }
         else {
             bool existe = false;
@@ -1536,12 +1522,10 @@ void reporteDeVentasArchivo() {
                 i++;
             }
             if (!existe) {
-                archivo << "El producto con ese código no existe" << endl;
+                fprintf(archt, "El producto con ese código no existe\n");
             }
         }
-        archivo << setw(10) << left << t->product.costoComprado;
-
-        archivo << setw(10) << left << t->product.costoVendido;
+        fprintf(archt, "%-20.2f %-20.2f ", t->product.costoComprado, t->product.costoVendido);
 
         if (venta.esVenta) {
             pc += (t->product.costoComprado * venta.cantidad);
@@ -1551,59 +1535,61 @@ void reporteDeVentasArchivo() {
             pc -= (t->product.costoComprado * venta.cantidad);
             pv -= (t->product.costoVendido * venta.cantidad);
         }
-        archivo << setw(10) << left << venta.vendedor;
-        archivo << endl;
+        fprintf(archt, "%-10d\n", venta.vendedor);
 
-        fread(&venta, sizeof(Venta), 1, arch);
+        fread(&venta, sizeof(Venta), 1, archd);
     }
-    archivo << endl;
-    fclose(arch);
 
-    archivo << endl;
-    archivo << "Inversión: " << pc << endl;
-    archivo << "Dinero total recaudado de las ventas: " << pv << endl;
-    archivo << "Ganancia: " << pv - pc << endl;
-    archivo.close();
+    fclose(archd);
+
+    for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
+        fprintf(archt, "-");
+    }
+
+    fprintf(archt, "\nInversión: %.2f \n", pc);
+    fprintf(archt, "Dinero total recaudado de las ventas: %.2f \n", pv);
+    fprintf(archt, "Ganancia: %.2f \n", pv - pc);
+
+    fclose(archt);
 }
 
 void reporteDeProveedoresArchivo() {
-    ofstream archivo;
-    archivo.open("Reporte de proveedores.txt");
+    FILE *archd, *archt;
 
-    archivo << "Reporte de proveedores" << endl;
-    FILE *arch;
-    arch = fopen("proveedores.dat", "r+b");
-    if (arch == NULL) {
-        archivo << "Archivo proveedores.dat no encontrado" << endl;
+    archt = fopen("Reporte de proveedores.txt", "w");
+    archd = fopen("proveedores.dat", "r+b");
+
+    fprintf(archt, "Reporte de proveedores\n");
+
+    if (archd == NULL) {
+        fprintf(archt, "Archivo proveedores.dat no encontrado\n");
         return;
     }
     for (int i = 0; i < ((20 * 3)); i++) {
-        archivo << "-";
+        fprintf(archt, "-");
     }
-    archivo << endl;
+    fprintf(archt, "\n");
 
-    archivo << setw(20) << left << "Clave";
-    archivo << setw(20) << left << "Nombre";
-    archivo << setw(20) << left << "Teléfono";
-    archivo << endl;
+    fprintf(archt, "%-20s %-20s %-20s\n", "Clave", "Nombre", "Teléfono");
 
     for (int i = 0; i < ((20 * 3)); i++) {
-        archivo << "-";
+        fprintf(archt, "-");
     }
-    archivo << endl;
+    fprintf(archt, "\n");
 
     Proveedor proveedor;
-    fread(&proveedor, sizeof(Proveedor), 1, arch);
-    while (!feof(arch)) {
-        archivo << setw(20) << left << proveedor.clave;
-        archivo << setw(20) << left << proveedor.nombre;
-        archivo << setw(20) << left << proveedor.telefono;
+    fread(&proveedor, sizeof(Proveedor), 1, archd);
+    while (!feof(archd)) {
+        fprintf(archt, "%-20s %-20s %-20d\n", proveedor.clave, proveedor.nombre, proveedor.telefono);
 
-        fread(&proveedor, sizeof(Proveedor), 1, arch);
+        fread(&proveedor, sizeof(Proveedor), 1, archd);
     }
-    archivo << endl;
-    fclose(arch);
-    archivo.close();
+    for (int i = 0; i < ((20 * 3)); i++) {
+        fprintf(archt, "-");
+    }
+    fprintf(archt, "\n");
+    fclose(archd);
+    fclose(archt);
 }
 
 /****************************************
