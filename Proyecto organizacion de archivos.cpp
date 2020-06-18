@@ -22,10 +22,12 @@ using namespace std;
 void escucharEspacio() {
     bool con = true;
     while (con) {
-        if (GetKeyState(' ') & 0x8000) {
-            while (GetKeyState(' ') & 0x8000) {
+        if (GetConsoleWindow() == GetForegroundWindow()) {
+            if (GetKeyState(' ') & 0x8000) {
+                while (GetKeyState(' ') & 0x8000) {
+                }
+                con = false;
             }
-            con = false;
         }
     }
 }
@@ -140,18 +142,20 @@ float pedirFlotante(string peticion) {
 int escucharTecla(int nOpciones) {
     char letras[] = {'U', 'N', 'E', 'I', 'F', 'A', 'Y', 'S'};
     while (true) {
-        for (int i = 0; i < nOpciones; i++) {
-            if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
-                while ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+        if (GetConsoleWindow() == GetForegroundWindow()) {
+            for (int i = 0; i < nOpciones; i++) {
+                if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                    while ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
+                    }
+                    return i + 1;
                 }
-                return i + 1;
             }
-        }
-        for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
-            if (GetKeyState(i) & 0x8000) {
-                while (GetKeyState(i) & 0x8000) {
+            for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
+                if (GetKeyState(i) & 0x8000) {
+                    while (GetKeyState(i) & 0x8000) {
+                    }
+                    return i - 48;
                 }
-                return i - 48;
             }
         }
     }
