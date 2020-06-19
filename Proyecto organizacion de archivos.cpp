@@ -96,6 +96,7 @@ int pedirEntero(string peticion) {
     cin >> str;
     fflush(stdin);
 
+    //Se llama recursivamente hasta que el usuario digite una opción correcta
     try {
         return stoi(str);
     }
@@ -114,6 +115,7 @@ unsigned long long pedirUnsignedLongLong(string peticion) {
     cin >> str;
     fflush(stdin);
 
+    //Se llama recursivamente hasta que el usuario digite una opción correcta
     try {
         return stoull(str);
     }
@@ -132,6 +134,7 @@ float pedirFlotante(string peticion) {
     cin >> str;
     fflush(stdin);
 
+    //Se llama recursivamente hasta que el usuario digite una opción correcta
     try {
         return stof(str);
     }
@@ -148,6 +151,7 @@ int escucharTecla(int nOpciones) {
     while (true) {
         //Solo si es la ventana activa
         if (GetConsoleWindow() == GetForegroundWindow()) {
+            //Verifiva las opciones que usan ctrl+KEY
             for (int i = 0; i < nOpciones; i++) {
                 if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
                     while ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
@@ -155,6 +159,7 @@ int escucharTecla(int nOpciones) {
                     return i + 1;
                 }
             }
+            //Verifica las teclas numéricas
             for (int i = 49; i <= 49 + (nOpciones - 1); i++) {
                 if (GetKeyState(i) & 0x8000) {
                     while (GetKeyState(i) & 0x8000) {
@@ -168,7 +173,7 @@ int escucharTecla(int nOpciones) {
 /****************************************
  * Declaración de los struct
  ***************************************/
-
+//Productos
 typedef struct
 {
     char codigo[7];
@@ -188,20 +193,23 @@ struct node {
 };
 typedef struct node *Tlist;
 
+//Proveedores
 typedef struct {
     char clave[20];
     char nombre[20];
     unsigned long long telefono;
 } Proveedor;
 
+//Vendedores
 typedef struct {
     int clave;
     char nombre[20];
     float salario;
 } Vendedor;
 
+//Ventas
 typedef struct {
-    bool esVenta;
+    bool esVenta;  //Venta o reembolzo
     unsigned long long numero;
     unsigned int dia;
     unsigned int mes;
@@ -265,6 +273,7 @@ void fillHashTable() {
     while (!feof(arch)) {
         int n = hashFunction(producto.codigo);
 
+        //Usa la lógica de las listas dinámicas
         if (hashTable[n] == NULL) {
             Tlist q = new (struct node);
             q->product = producto;
@@ -321,12 +330,14 @@ void writeFile() {
     Tlist list;
     tproducto product;
 
+    //Recorre todo el arreglo
     for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
         if (hashTable[i] == NULL) {
         }
         else {
             Tlist t = hashTable[i];
             product = t->product;
+            //Solo escribe el producto ya que escribir todo el nodo sería un caos con la memoria
             fwrite(&product, sizeof(tproducto), 1, arch);
             while (t->next != NULL) {
                 t = t->next;
@@ -347,7 +358,9 @@ void altaProducto() {
     tproducto producto;
     bool codigoValido = 0;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Petición de datos
+    /////////////////////////////////////////////////////////////////////////////////////
 
     //Borra lo que escribimos escuchando las teclas
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -379,7 +392,9 @@ void altaProducto() {
     cout << "Ingrese el proveedor del producto: ";
     cin.getline(producto.proveedor, 20, '\n');
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que exista el proveedor
+    /////////////////////////////////////////////////////////////////////////////////////
 
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
@@ -423,8 +438,10 @@ void altaProducto() {
 
     producto.unidadesCompradas = producto.existencia;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que ese código no exista
     //Si no existe lo posiciona en el arreglo y lo escribe en el archivo
+    /////////////////////////////////////////////////////////////////////////////////////
 
     int n = hashFunction(producto.codigo);
 
@@ -456,11 +473,14 @@ void altaProducto() {
 //Función que da de baja un producto
 void bajaProducto(string code) {
     //Lo busca en el arreglo y como es archivo directo se puede buscar directamente con la función hash
+
+    //Verifica si es el primero de la lista
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
         cout << "No existe el producto con ese código" << endl;
     }
     else {
+        //Si no busca en los nodos hijos
         bool existe = false;
         Tlist t = hashTable[n];
         int i = 1;
@@ -517,11 +537,14 @@ void bajaProducto(string code) {
 //Función que cambia los datos de un producto
 void cambioProducto(string code) {
     //Lo busca en el arreglo, píde los datos y como es archivo directo se puede buscar directamente con la función hash
+
+    //Verifica si es el primero de la lista
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
         cout << "No existe el producto con ese código" << endl;
     }
     else {
+        //Si no busca en los nodos hijos
         bool existe = false;
         Tlist t = hashTable[n];
         int i = 1;
@@ -616,11 +639,14 @@ void cambioProducto(string code) {
 //Función que busca un producto
 void consultaProducto(string code) {
     //Lo busca en el arreglo y como es archivo directo se puede buscar directamente con la función hash
+
+    //Verifica si es el primero de la lista
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
         cout << "No existe el producto con ese código" << endl;
     }
     else {
+        //Si no busca en los nodos hijos
         bool existe = false;
         Tlist t = hashTable[n];
         int i = 1;
@@ -667,7 +693,9 @@ void altaProveedor() {
     //Borra lo que escribimos escuchando las teclas
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Pide los datos
+    /////////////////////////////////////////////////////////////////////////////////////
 
     bool codigoValido = 0;
 
@@ -705,7 +733,9 @@ void bajaProveedor() {
     getline(cin, cod);
     Proveedor proveedor;
     int existe = 0;
-    //Lo busca en el archivo
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Lo busca en el archivo secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
@@ -751,6 +781,9 @@ void cambioProveedor() {
     getline(cin, cod);
     Proveedor proveedor;
     int existe = 0;
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Lo busca en el archivo secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
@@ -798,6 +831,9 @@ void consultaProveedor() {
     getline(cin, cod);
     Proveedor proveedor;
     int existe = 0;
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Lo busca en el archivo secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
         if (cod == proveedor.clave) {
@@ -830,7 +866,9 @@ void altaVendedor() {
 
     Vendedor vendedor;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Pide los datos
+    /////////////////////////////////////////////////////////////////////////////////////
 
     //Borra lo que escribimos escuchando las teclas
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
@@ -867,7 +905,10 @@ void bajaVendedor() {
 
     fflush(stdin);
     int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
-    ;
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Lo busca en el archivo secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
 
     int existe = 0;
     fread(&vendedor, sizeof(Vendedor), 1, arch);
@@ -912,6 +953,10 @@ void cambioVendedor() {
 
     fflush(stdin);
     int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Lo busca en el archivo secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
 
     int existe = 0;
     fread(&vendedor, sizeof(Vendedor), 1, arch);
@@ -958,6 +1003,10 @@ void consultaVendedor() {
     fflush(stdin);
     int cod = pedirEntero("Ingrese la clave del vendedor a consultar: ");
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Lo busca en el archivo secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
+
     int existe = 0;
     fread(&vendedor, sizeof(Vendedor), 1, arch);
     while (!feof(arch)) {
@@ -990,7 +1039,9 @@ void altaVenta() {
 
     Venta venta;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Pide los datos
+    /////////////////////////////////////////////////////////////////////////////////////
 
     venta.esVenta = true;
 
@@ -1014,7 +1065,9 @@ void altaVenta() {
 
     Tlist t;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que exista el código
+    /////////////////////////////////////////////////////////////////////////////////////
 
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
@@ -1043,7 +1096,9 @@ void altaVenta() {
 
     bool band = true;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que las cantidades sean congruentes
+    /////////////////////////////////////////////////////////////////////////////////////
 
     while (band) {
         fflush(stdin);
@@ -1074,7 +1129,9 @@ void altaVenta() {
     cout << "Digite el código numerico del vendedor: ";
     venta.vendedor = pedirEntero("");
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que el vendedor exista
+    /////////////////////////////////////////////////////////////////////////////////////
 
     FILE *archV;
     archV = fopen("vendedores.dat", "r+b");
@@ -1107,7 +1164,9 @@ void altaVenta() {
 
     fclose(archV);
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Genera automáticamente la fecha y el número de la compra
+    /////////////////////////////////////////////////////////////////////////////////////
 
     time_t now = time(0);
 
@@ -1136,7 +1195,9 @@ void bajaVenta() {
 
     Venta venta;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Pide los datos
+    /////////////////////////////////////////////////////////////////////////////////////
 
     venta.esVenta = false;
 
@@ -1160,7 +1221,9 @@ void bajaVenta() {
 
     Tlist t;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que exista un producto con ese código
+    /////////////////////////////////////////////////////////////////////////////////////
 
     int n = hashFunction(code);
     if (hashTable[n] == NULL) {
@@ -1189,7 +1252,9 @@ void bajaVenta() {
 
     bool band = true;
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que las cantidades sean congruentes
+    /////////////////////////////////////////////////////////////////////////////////////
 
     while (band) {
         fflush(stdin);
@@ -1220,7 +1285,9 @@ void bajaVenta() {
     cout << "Digite el código numerico del vendedor: ";
     venta.vendedor = pedirEntero("");
 
+    /////////////////////////////////////////////////////////////////////////////////////
     //Verifica que el vendedor exista
+    /////////////////////////////////////////////////////////////////////////////////////
 
     FILE *archV;
     archV = fopen("vendedores.dat", "r+b");
@@ -1253,7 +1320,9 @@ void bajaVenta() {
 
     fclose(archV);
 
-    //Genera automáticamente la fecha y el npumero de venta
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Genera automáticamente la fecha y el número de venta
+    /////////////////////////////////////////////////////////////////////////////////////
 
     time_t now = time(0);
 
@@ -1333,6 +1402,10 @@ void inventarioPantalla() {
     }
     cout << endl;
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Imprime directamente
+    /////////////////////////////////////////////////////////////////////////////////////
+
     for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
         if (hashTable[i] == NULL) {
         }
@@ -1402,6 +1475,10 @@ void reporteDeVentasPantalla() {
     }
     cout << endl;
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Imprime secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
+
     Venta venta;
     fread(&venta, sizeof(Venta), 1, arch);
     while (!feof(arch)) {
@@ -1418,6 +1495,11 @@ void reporteDeVentasPantalla() {
         cout << setw(15) << left << fecha;
         cout << setw(10) << left << venta.clave;
         cout << setw(10) << left << venta.cantidad;
+
+        /////////////////////////////////////////////////////////////////////////////////////
+        //Busca el producto con esa clave
+        //Para obtener datos como el precio
+        /////////////////////////////////////////////////////////////////////////////////////
 
         string code = venta.clave;
         Tlist t;
@@ -1493,6 +1575,10 @@ void reporteDeProveedoresPantalla() {
     }
     cout << endl;
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Imprime secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
+
     Proveedor proveedor;
     fread(&proveedor, sizeof(Proveedor), 1, arch);
     while (!feof(arch)) {
@@ -1529,6 +1615,10 @@ void inventarioArchivo() {
         fprintf(arch, "-");
     }
     fprintf(arch, "\n");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Escribe directamente
+    /////////////////////////////////////////////////////////////////////////////////////
 
     for (int i = 0; i < NUMBER_OF_SLOTS; i++) {
         if (hashTable[i] == NULL) {
@@ -1578,6 +1668,10 @@ void reporteDeVentasArchivo() {
         fprintf(archt, "-");
     }
     fprintf(archt, "\n");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Escribe secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
 
     Venta venta;
     fread(&venta, sizeof(Venta), 1, archd);
@@ -1671,6 +1765,10 @@ void reporteDeProveedoresArchivo() {
         fprintf(archt, "-");
     }
     fprintf(archt, "\n");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Escribe secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
 
     Proveedor proveedor;
     fread(&proveedor, sizeof(Proveedor), 1, archd);
@@ -2123,6 +2221,7 @@ int main() {
     //Rellena con productos.dat
     fillHashTable();
 
+    //Variables para controlar los menús y submenús
     int opcion1,
         opcion2, opcion3;
 
@@ -2133,6 +2232,7 @@ int main() {
 
     bool con = true;
 
+    //Switch anidados dentro de whiles para navegar dentro del menú
     while (opcion1 != 8) {
         system("cls");
         cout << "1. Accesorios" << endl;
