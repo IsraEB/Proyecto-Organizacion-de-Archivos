@@ -23,6 +23,7 @@ using namespace std;
 void escucharEspacio() {
     bool con = true;
     while (con) {
+        //Solo si es la ventana activa
         if (GetConsoleWindow() == GetForegroundWindow()) {
             if (GetKeyState(' ') & 0x8000) {
                 while (GetKeyState(' ') & 0x8000) {
@@ -145,6 +146,7 @@ int escucharTecla(int nOpciones) {
     char letras[] = {'U', 'N', 'E', 'I', 'F', 'A', 'Y', 'S'};
     //Entra a un bucle que se rompe cuando pulsas una tecla indicada
     while (true) {
+        //Solo si es la ventana activa
         if (GetConsoleWindow() == GetForegroundWindow()) {
             for (int i = 0; i < nOpciones; i++) {
                 if ((GetKeyState(VK_CONTROL) & 0x8000) && (GetKeyState(letras[i]) & 0x8000)) {
