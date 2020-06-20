@@ -2339,7 +2339,6 @@ int main() {
     columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
     rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
-    cout << endl;
     centrar_cadena("UNIVERSIDAD AUTÓNOMA DEL ESTADO DE MÉXICO\n", columns);
     centrar_cadena("FACULTAD DE INGENIERÍA\n", columns);
     centrar_cadena("INGENIERÍA EN COMPUTACIÓN\n", columns);
@@ -2363,7 +2362,7 @@ int main() {
          << endl;
 
     cout << "     SEMESTRE 2020-A";
-    derecha_cadena("JUNIO DE 2020     \n", columns - 15 - 5);
+    derecha_cadena("JUNIO DE 2020     \n", columns - 15 /*SEMESTRE 2020-A*/ - 5 /*Margen de 5 espacios*/);
     cout << endl;
     escucharEspacio(1);
 
