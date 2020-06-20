@@ -771,13 +771,6 @@ void consultaProducto(string code) {
 
 //Función que da de alta a un proveedor
 void altaProveedor() {
-    FILE *arch;
-    arch = fopen("proveedores.dat", "ab");
-    if (arch == NULL) {
-        cout << "\n\t\tArchivo proveedores.dat no se pudo generar." << endl;
-        return;
-    }
-
     Proveedor proveedor;
 
     //Borra lo que escribimos escuchando las teclas
@@ -793,6 +786,27 @@ void altaProveedor() {
     cout << "\n\n\t\tDigite la clave del proveedor: ";
     cin.getline(proveedor.clave, 20, '\n');
 
+    ///////////////////////////////////////////////////////////////////////////////////////
+    //Verifica que no halla un proveedor con esa clave
+    //////////////////////////////////////////////////////////////////////////////////////
+
+    FILE *arch;
+    Proveedor p;
+    arch = fopen("proveedores.dat", "r+b");
+    if (arch != NULL) {
+        fread(&p, sizeof(Proveedor), 1, arch);
+        while (!feof(arch)) {
+            int ret = strncmp(proveedor.clave, p.clave, 20);
+            if (ret == 0) {
+                cout << "\n\n\t\tYa existe un proveedor con esa clave " << endl;
+                cout << "\t\tSe cancela todo" << endl;
+                return;
+            }
+            fread(&p, sizeof(Proveedor), 1, arch);
+        }
+        fclose(arch);
+    }
+
     fflush(stdin);
     cout << "\n\t\tDigite el nombre del proveedor: ";
     cin.getline(proveedor.nombre, 20, '\n');
@@ -800,6 +814,13 @@ void altaProveedor() {
     fflush(stdin);
     cout << "\n\t\tDigite el número telefónico del proveedor: ";
     proveedor.telefono = pedirUnsignedLongLong("");
+
+    *arch;
+    arch = fopen("proveedores.dat", "ab");
+    if (arch == NULL) {
+        cout << "\n\t\tArchivo proveedores.dat no se pudo generar." << endl;
+        return;
+    }
 
     fwrite(&proveedor, sizeof(Proveedor), 1, arch);
     fclose(arch);
@@ -947,13 +968,6 @@ void consultaProveedor() {
 
 //Función que da de alta a un vendedor
 void altaVendedor() {
-    FILE *arch;
-    arch = fopen("vendedores.dat", "ab");
-    if (arch == NULL) {
-        cout << "\n\n\t\tArchivo vendedores.dat no pudo ser generado." << endl;
-        return;
-    }
-
     Vendedor vendedor;
 
     /////////////////////////////////////////////////////////////////////////////////////
@@ -968,6 +982,26 @@ void altaVendedor() {
     fflush(stdin);
     vendedor.clave = pedirEntero("\n\n\t\tDigite la clave numérica del vendedor: ");
 
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Verifica que no exista vendedor con esa clave
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    FILE *arch;
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch != NULL) {
+        Vendedor v;
+        fread(&v, sizeof(Vendedor), 1, arch);
+        while (!feof(arch)) {
+            if (vendedor.clave == v.clave) {
+                cout << "\n\t\tYa existe un vendedor con esa clave" << endl;
+                cout << "\t\tSe cancela todo" << endl;
+                return;
+            }
+            fread(&v, sizeof(Vendedor), 1, arch);
+        }
+        fclose(arch);
+    }
+
     fflush(stdin);
     cout << "\n\t\tDigite el nombre del vendedor: ";
     cin.getline(vendedor.nombre, 20, '\n');
@@ -975,6 +1009,12 @@ void altaVendedor() {
     fflush(stdin);
     vendedor.salario = pedirFlotante("\n\t\tDigite el salario del vendedor: ");
 
+    *arch;
+    arch = fopen("vendedores.dat", "ab");
+    if (arch == NULL) {
+        cout << "\n\n\t\tArchivo vendedores.dat no pudo ser generado." << endl;
+        return;
+    }
     fwrite(&vendedor, sizeof(Vendedor), 1, arch);
     fclose(arch);
 }
@@ -1537,7 +1577,8 @@ void inventarioPantalla() {
 
 //Función que imprime el reporte de ventas
 void reporteDeVentasPantalla() {
-    cout << "Reporte de ventas" << endl;
+    cout << "\n\n\t\tReporte de ventas\n"
+         << endl;
     FILE *arch;
 
     float pc = 0;
@@ -1598,7 +1639,7 @@ void reporteDeVentasPantalla() {
         Tlist t;
         int n = hashFunction(code);
         if (hashTable[n] == NULL) {
-            cout << "No existe el producto con ese código" << endl;
+            cout << "\n\n\t\tNo existe el producto con ese código." << endl;
         }
         else {
             bool existe = false;
@@ -1613,7 +1654,7 @@ void reporteDeVentasPantalla() {
                 i++;
             }
             if (!existe) {
-                cout << "El producto con ese código no existe" << endl;
+                cout << "\n\n\t\tEl producto con ese código no existe." << endl;
             }
         }
         cout << setw(20) << left << t->product.costoComprado;
@@ -1639,18 +1680,20 @@ void reporteDeVentasPantalla() {
         cout << "-";
     }
 
-    printf("\nInversión: %.2f \n", pc);
-    printf("Dinero total recaudado de las ventas: %.2f \n", pv);
-    printf("Ganancia: %.2f \n", pv - pc);
+    printf("\n\n\t\tInversión: %.2f \n", pc);
+    printf("\n\t\tDinero total recaudado de las ventas: %.2f \n", pv);
+    printf("\n\t\tGanancia: %.2f \n", pv - pc);
+    printf("\n\n");
 }
 
 //Función que imprime el reporte de proveedores
 void reporteDeProveedoresPantalla() {
-    cout << "Reporte de proveedores" << endl;
+    cout << "\n\n\t\tReporte de proveedores" << endl;
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "Archivo proveedores.dat no encontrado" << endl;
+        cout << "\n\t\tArchivo proveedores.dat no encontrado.\n\n"
+             << endl;
         return;
     }
     for (int i = 0; i < ((20 * 3)); i++) {
@@ -1678,10 +1721,10 @@ void reporteDeProveedoresPantalla() {
         cout << setw(20) << left << proveedor.clave;
         cout << setw(20) << left << proveedor.nombre;
         cout << setw(20) << left << proveedor.telefono;
+        cout << endl;
 
         fread(&proveedor, sizeof(Proveedor), 1, arch);
     }
-    cout << endl;
     for (int i = 0; i < ((20 * 3)); i++) {
         cout << "-";
     }
@@ -1747,7 +1790,7 @@ void reporteDeVentasArchivo() {
     float pv = 0;
 
     if (archd == NULL) {
-        fprintf(archt, "Archivo ventas.dat no encontrado\n");
+        fprintf(archt, "\n\n\t\tArchivo ventas.dat no encontrado.\n");
         return;
     }
     for (int i = 0; i < ((10 * 5) + 15 + (20 * 2)); i++) {
@@ -1889,7 +1932,7 @@ void crear() {
     //Borra lo que escribimos escuchando las teclas
     FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE));
 
-    cout << "Dijite el nombre del archivo que quiere crear, junto con su extensión: ";
+    cout << "\n\n\t\tDijite el nombre del archivo que quiere crear, junto con su extensión: ";
     cin >> str;
 
     string comando = "type nul > " + str;
@@ -2374,7 +2417,7 @@ int main() {
         rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
 
         system("cls");
-        system("color 8B");
+        system("color 0B");
         cout << endl;
         centrar_cadena("MENÚ PRINCIPAL\n", columns);
         cout << endl;
@@ -2492,7 +2535,7 @@ int main() {
                             break;
                         }
                         case 5: {
-                            system("color 8B");
+                            system("color B");
                             cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                             cout << endl;
                             break;
@@ -2547,7 +2590,7 @@ int main() {
                             break;
                         }
                         case 5: {
-                            system("color 8B");
+                            system("color 0B");
                             cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                             cout << endl;
                             break;
@@ -2601,7 +2644,7 @@ int main() {
                             break;
                         }
                         case 5: {
-                            system("color 8B");
+                            system("color 0B");
                             cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                             cout << endl;
                             break;
@@ -2646,7 +2689,7 @@ int main() {
                             break;
                         }
                         case 3: {
-                            system("color 8B");
+                            system("color 0B");
                             cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                             cout << endl;
                             break;
@@ -2681,26 +2724,33 @@ int main() {
                         case 1: {
                             while (opcion3 != 3) {
                                 system("cls");
-                                cout << "1. Reporte impreso en pantalla" << endl;
-                                cout << "2. Reporte en archivo de texto" << endl;
-                                cout << "3. Regresar" << endl;
-                                cout << "Presione su opción: " << endl;
+                                system("color 0A");
+                                centrar_cadena("MENÚ DE INVENTARIO\n\n", columns);
+                                cout << "\t\t [1]. Reporte impreso en pantalla" << endl;
+                                cout << "\n\t\t [2]. Reporte en archivo de texto" << endl;
+                                cout << "\n\t\t [3]. Regresar" << endl;
+                                cout << "\n\n\t\tPresione su opción: " << endl;
                                 opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
+                                        system("color 0F");
                                         inventarioPantalla();
                                         break;
                                     }
                                     case 2: {
+                                        system("color 0F");
                                         inventarioArchivo();
                                         break;
                                     }
                                     case 3: {
-                                        cout << "Regresando al menú de informes" << endl;
+                                        system("color 0C");
+                                        cout << "\n\n\t\tRegresando al menú de informes...\n"
+                                             << endl;
                                         break;
                                     }
                                     default: {
-                                        cout << "Digite una opción correcta" << endl;
+                                        cout << "\n\t\tDigite una opción correcta\n"
+                                             << endl;
                                         break;
                                     }
                                 }
@@ -2711,22 +2761,28 @@ int main() {
                         case 2: {
                             while (opcion3 != 3) {
                                 system("cls");
-                                cout << "1. Reporte impreso en pantalla" << endl;
-                                cout << "2. Reporte en archivo de texto" << endl;
-                                cout << "3. Regresar" << endl;
-                                cout << "Presione su opción: " << endl;
+                                system("color 0A");
+                                centrar_cadena("MENÚ DE REPORTE DE VENTAS\n\n", columns);
+                                cout << "\t\t [1]. Reporte impreso en pantalla" << endl;
+                                cout << "\n\t\t [2]. Reporte en archivo de texto" << endl;
+                                cout << "\n\t\t [3]. Regresar" << endl;
+                                cout << "\n\n\t\tPresione su opción: " << endl;
                                 opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
+                                        system("color 0F");
                                         reporteDeVentasPantalla();
                                         break;
                                     }
                                     case 2: {
+                                        system("color 0F");
                                         reporteDeVentasArchivo();
                                         break;
                                     }
                                     case 3: {
-                                        cout << "\n\n\n\t\tRegresando al menú de informes..." << endl;
+                                        system("color 0C");
+                                        cout << "\n\n\t\tRegresando al menú de informes...\n"
+                                             << endl;
                                         break;
                                     }
                                     default: {
@@ -2741,22 +2797,28 @@ int main() {
                         case 3: {
                             while (opcion3 != 3) {
                                 system("cls");
-                                cout << "1. Reporte impreso en pantalla" << endl;
-                                cout << "2. Reporte en archivo de texto" << endl;
-                                cout << "3. Regresar" << endl;
-                                cout << "Presione su opción: " << endl;
+                                system("color 0A");
+                                centrar_cadena("MENÚ DE REPORTE DE PROVEEDORES\n\n", columns);
+                                cout << "\t\t [1]. Reporte impreso en pantalla" << endl;
+                                cout << "\n\t\t [2]. Reporte en archivo de texto" << endl;
+                                cout << "\n\t\t [3]. Regresar" << endl;
+                                cout << "\n\n\t\tPresione su opción: " << endl;
                                 opcion3 = escucharTecla(3);
                                 switch (opcion3) {
                                     case 1: {
+                                        system("color 0F");
                                         reporteDeProveedoresPantalla();
                                         break;
                                     }
                                     case 2: {
+                                        system("color 0F");
                                         reporteDeProveedoresArchivo();
                                         break;
                                     }
                                     case 3: {
-                                        cout << "\n\n\n\t\tRegresando al menú de informes..." << endl;
+                                        system("color 0C");
+                                        cout << "\n\n\t\tRegresando al menú de informes...\n"
+                                             << endl;
                                         break;
                                     }
                                     default: {
@@ -2769,6 +2831,7 @@ int main() {
                             break;
                         }
                         case 4: {
+                            system("color 0B");
                             cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                             cout << endl;
                             escucharEspacio();
@@ -2797,7 +2860,7 @@ int main() {
                 centrar_cadena("MENÚ DE ADMINISTRACIÓN\n", columns);
                 bool hayCaracterIncorrecto = false;
                 fflush(stdin);
-                cout << "\n\t\t Digite la contraseña: ";
+                cout << "\n\t\tDigite la contraseña: ";
                 fflush(stdin);
                 gets(intento);
                 for (int j = 0; j <= strlen(intento); j++) {
@@ -2808,30 +2871,37 @@ int main() {
                 if (!hayCaracterIncorrecto) {
                     while (opcion2 != 5) {
                         system("cls");
-                        cout << "1. Crear archivos" << endl;
-                        cout << "2. Respaldar" << endl;
-                        cout << "3. Restaurar" << endl;
-                        cout << "4. Compactar archivos" << endl;
-                        cout << "5. Regresar" << endl;
+                        system("color 0A");
+                        centrar_cadena("ADMINISTRACIÓN\n", columns);
+                        cout << "\t\t [1]. Crear archivos" << endl;
+                        cout << "\n\t\t [2]. Respaldar" << endl;
+                        cout << "\n\t\t [3]. Restaurar" << endl;
+                        cout << "\n\t\t [4]. Compactar archivos" << endl;
+                        cout << "\n\t\t [5]. Regresar" << endl;
                         opcion2 = escucharTecla(5);
                         switch (opcion2) {
                             case 1: {
+                                system("color 0F");
                                 crear();
                                 break;
                             }
                             case 2: {
+                                system("color 0F");
                                 respaldar();
                                 break;
                             }
                             case 3: {
+                                system("color 0F");
                                 restaurar();
                                 break;
                             }
                             case 4: {
+                                system("color 0F");
                                 compactar();
                                 break;
                             }
                             case 5: {
+                                system("color 0B");
                                 cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                                 cout << endl;
                                 break;
@@ -2845,8 +2915,11 @@ int main() {
                     }
                 }
                 else {
-                    cout << "Contraseña incorrecta" << endl;
-                    cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
+                    system("color 0A");
+                    cout << "\n\n\t\tContraseña incorrecta" << endl;
+                    cout << endl;
+                    system("color 0B");
+                    cout << "\n\n\t\tRegresando al menú principal..." << endl;
                     cout << endl;
                     escucharEspacio();
                 }
@@ -2861,6 +2934,7 @@ int main() {
                 columns = csbi.srWindow.Right - csbi.srWindow.Left + 1;
                 rows = csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
                 centrar_cadena("¡Hasta luego!\n", columns);
+                cout << endl;
                 cout << endl;
                 escucharEspacio();
                 break;
