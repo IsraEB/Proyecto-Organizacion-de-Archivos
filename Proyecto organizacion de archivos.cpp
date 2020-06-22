@@ -1686,6 +1686,52 @@ void reporteDeVentasPantalla() {
     printf("\n\n");
 }
 
+//Función que imprime el reporte de vendedores
+void reporteDeVendedoresPantalla() {
+    cout << "\n\n\t\tReporte de vendedores" << endl;
+    FILE *arch;
+    arch = fopen("vendedores.dat", "r+b");
+    if (arch == NULL) {
+        cout << "\n\t\tArchivo vendedores.dat no encontrado.\n\n"
+             << endl;
+        return;
+    }
+    for (int i = 0; i < ((20 * 3)); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
+    cout << setw(20) << left << "Clave";
+    cout << setw(20) << left << "Nombre";
+    cout << setw(20) << left << "Salario";
+    cout << endl;
+
+    for (int i = 0; i < ((20 * 3)); i++) {
+        cout << "-";
+    }
+    cout << endl;
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Imprime secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    Vendedor vendedor;
+    fread(&vendedor, sizeof(Vendedor), 1, arch);
+    while (!feof(arch)) {
+        cout << setw(20) << left << vendedor.clave;
+        cout << setw(20) << left << vendedor.nombre;
+        cout << setw(20) << left << vendedor.salario;
+        cout << endl;
+
+        fread(&vendedor, sizeof(Vendedor), 1, arch);
+    }
+    for (int i = 0; i < ((20 * 3)); i++) {
+        cout << "-";
+    }
+    cout << endl;
+    fclose(arch);
+}
+
 //Función que imprime el reporte de proveedores
 void reporteDeProveedoresPantalla() {
     cout << "\n\n\t\tReporte de proveedores" << endl;
@@ -1874,6 +1920,50 @@ void reporteDeVentasArchivo() {
     fprintf(archt, "Dinero total recaudado de las ventas: %.2f \n", pv);
     fprintf(archt, "Ganancia: %.2f \n", pv - pc);
 
+    fclose(archt);
+}
+
+//Función que genera un archivo con el reporte de vendedores
+void reporteDeVendedoresArchivo() {
+    FILE *archd, *archt;
+
+    archt = fopen("Reporte de vendedores.txt", "w");
+    archd = fopen("vendedores.dat", "r+b");
+
+    fprintf(archt, "Reporte de vendedores\n");
+
+    if (archd == NULL) {
+        fprintf(archt, "Archivo vendedores.dat no encontrado\n");
+        return;
+    }
+    for (int i = 0; i < ((20 * 3)); i++) {
+        fprintf(archt, "-");
+    }
+    fprintf(archt, "\n");
+
+    fprintf(archt, "%-20s %-20s %-20s\n", "Clave", "Nombre", "Salario");
+
+    for (int i = 0; i < ((20 * 3)); i++) {
+        fprintf(archt, "-");
+    }
+    fprintf(archt, "\n");
+
+    /////////////////////////////////////////////////////////////////////////////////////
+    //Escribe secuencialmente
+    /////////////////////////////////////////////////////////////////////////////////////
+
+    Vendedor vendedor;
+    fread(&vendedor, sizeof(Vendedor), 1, archd);
+    while (!feof(archd)) {
+        fprintf(archt, "%-20d %-20s %-20f\n", vendedor.clave, vendedor.nombre, vendedor.salario);
+
+        fread(&vendedor, sizeof(Vendedor), 1, archd);
+    }
+    for (int i = 0; i < ((20 * 3)); i++) {
+        fprintf(archt, "-");
+    }
+    fprintf(archt, "\n");
+    fclose(archd);
     fclose(archt);
 }
 
@@ -2393,10 +2483,10 @@ int main() {
 
     cout << "\n\tGrupo: CO02" << endl
          << endl;
-    cout << "\n\tEstudiantes: Ana Contreras Peralta";
+    cout << "\n\tEstudiantes: Ana Laura Contreras Peralta";
     cout << "\n\t             Alejandro González Jiménez";
-    cout << "\n\t             Cristian";
-    cout << "\n\t             Daniel Sotelo";
+    cout << "\n\t             Cristian Omar Gutiérrez Millán";
+    cout << "\n\t             Daniel Sotelo Rizo";
     cout << "\n\t             Elizabeth García González";
     cout << "\n\t             Israel Enríquez Barreto";
     cout << "\n\t             María de Jesús Sánchez Suárez";
@@ -2704,7 +2794,7 @@ int main() {
                 break;
             }
             case 5: {
-                while (opcion2 != 4) {
+                while (opcion2 != 5) {
                     system("cls");
                     system("color 0C");
                     //Obtiene el número de columnas y filas de la consola
@@ -2715,10 +2805,11 @@ int main() {
                     centrar_cadena("MENÚ DE INFORMES\n", columns);
                     cout << "\t\t [1]. Inventario" << endl;
                     cout << "\n\t\t [2]. Reporte de ventas" << endl;
-                    cout << "\n\t\t [3]. Reporte de proveedores" << endl;
-                    cout << "\n\t\t [4]. Regresar" << endl;
+                    cout << "\n\t\t [3]. Reporte de vendedores" << endl;
+                    cout << "\n\t\t [4]. Reporte de proveedores" << endl;
+                    cout << "\n\t\t [5]. Regresar" << endl;
                     cout << "\n\n\t\tPresione su opción: " << endl;
-                    opcion2 = escucharTecla(4);
+                    opcion2 = escucharTecla(5);
                     opcion3 = 0;
                     switch (opcion2) {
                         case 1: {
@@ -2798,6 +2889,43 @@ int main() {
                             while (opcion3 != 3) {
                                 system("cls");
                                 system("color 0A");
+                                centrar_cadena("MENÚ DE VENDEDORES\n\n", columns);
+                                cout << "\t\t [1]. Reporte impreso en pantalla" << endl;
+                                cout << "\n\t\t [2]. Reporte en archivo de texto" << endl;
+                                cout << "\n\t\t [3]. Regresar" << endl;
+                                cout << "\n\n\t\tPresione su opción: " << endl;
+                                opcion3 = escucharTecla(3);
+                                switch (opcion3) {
+                                    case 1: {
+                                        system("color 0F");
+                                        reporteDeVendedoresPantalla();
+                                        break;
+                                    }
+                                    case 2: {
+                                        system("color 0F");
+                                        reporteDeVendedoresArchivo();
+                                        break;
+                                    }
+                                    case 3: {
+                                        system("color 0C");
+                                        cout << "\n\n\t\tRegresando al menú de informes...\n"
+                                             << endl;
+                                        break;
+                                    }
+                                    default: {
+                                        cout << "\n\t\tDigite una opción correcta\n"
+                                             << endl;
+                                        break;
+                                    }
+                                }
+                                escucharEspacio();
+                            }
+                            break;
+                        }
+                        case 4: {
+                            while (opcion3 != 3) {
+                                system("cls");
+                                system("color 0A");
                                 centrar_cadena("MENÚ DE REPORTE DE PROVEEDORES\n\n", columns);
                                 cout << "\t\t [1]. Reporte impreso en pantalla" << endl;
                                 cout << "\n\t\t [2]. Reporte en archivo de texto" << endl;
@@ -2830,7 +2958,7 @@ int main() {
                             }
                             break;
                         }
-                        case 4: {
+                        case 5: {
                             system("color 0B");
                             cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
                             cout << endl;
