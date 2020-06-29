@@ -2228,6 +2228,10 @@ void restaurar() {
                     fread(&producto, sizeof(tproducto), 1, arch);
                 }
                 fclose(arch2);
+                //Inicializa al arreglo en valores nulos
+                initializeHashTable();
+                //Rellena con productos.dat
+                fillHashTable();
             }
         }
         else {
@@ -2245,6 +2249,10 @@ void restaurar() {
                     fread(&producto, sizeof(tproducto), 1, arch);
                 }
                 fclose(arch2);
+                //Inicializa al arreglo en valores nulos
+                initializeHashTable();
+                //Rellena con productos.dat
+                fillHashTable();
             }
         }
     }
