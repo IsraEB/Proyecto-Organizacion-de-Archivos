@@ -3062,6 +3062,36 @@ int main() {
                 break;
             }
             case 7: {
+                system("cls");
+                system("color 0A");
+                centrar_cadena("AYUDA\n", columns);
+                cout << "\t\t [1]. Manual de usuario" << endl;
+                cout << "\n\t\t [2]. Manual técnico" << endl;
+                cout << "\n\t\t [3]. Regresar al menú principal" << endl;
+                opcion2 = escucharTecla(3);
+                switch (opcion2) {
+                    case 1: {
+                        ShellExecute(NULL, "open", "Manual de Usuario.pdf",
+                                     NULL, NULL, SW_SHOWNORMAL);
+                        break;
+                    }
+                    case 2: {
+                        ShellExecute(NULL, "open", "Manual tecnico.pdf",
+                                     NULL, NULL, SW_SHOWNORMAL);
+                        break;
+                    }
+                    case 3: {
+                        system("color 0B");
+                        cout << "\n\n\n\t\tRegresando al menú principal..." << endl;
+                        cout << endl;
+                        break;
+                    }
+                    default: {
+                        cout << "Digite una opción correcta" << endl;
+                        break;
+                    }
+                }
+
                 break;
             }
             case 8: {
