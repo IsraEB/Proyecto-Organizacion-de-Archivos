@@ -8,7 +8,6 @@
 #include <windows.h>
 
 #include <ctime>
-#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -879,7 +878,7 @@ void cambioProveedor() {
     FILE *arch;
     arch = fopen("proveedores.dat", "r+b");
     if (arch == NULL) {
-        cout << "n\n\t\tArchivo proveedores.dat no encontrado." << endl;
+        cout << "\n\n\t\tArchivo proveedores.dat no encontrado." << endl;
         cout << "\t\tAgregue proveedores." << endl;
         return;
     }
@@ -1871,7 +1870,7 @@ void reporteDeVentasArchivo() {
 
         strcpy(fechav, fecha.c_str());
 
-        fprintf(archt, "%-13d %-15s %-10s %-10d ", venta.numero, fechav, venta.clave, venta.cantidad);
+        fprintf(archt, "%-13lld %-15s %-10s %-10d ", venta.numero, fechav, venta.clave, venta.cantidad);
 
         string code = venta.clave;
         Tlist t;
@@ -1999,7 +1998,7 @@ void reporteDeProveedoresArchivo() {
     Proveedor proveedor;
     fread(&proveedor, sizeof(Proveedor), 1, archd);
     while (!feof(archd)) {
-        fprintf(archt, "%-20s %-20s %-20d\n", proveedor.clave, proveedor.nombre, proveedor.telefono);
+        fprintf(archt, "%-20s %-20s %-20lld\n", proveedor.clave, proveedor.nombre, proveedor.telefono);
 
         fread(&proveedor, sizeof(Proveedor), 1, archd);
     }
@@ -2208,7 +2207,7 @@ void respaldar() {
 void restaurar() {
     FILE *arch;
 
-    //Copia los datos del respalo a otro archivo nuevo y luego lo renombra
+    //Copia los datos del respaldo a otro archivo nuevo y luego lo renombra
     //Borra el archivo original si existe
     arch = fopen("productos respaldo.dat", "r+b");
     if (arch == NULL) {
@@ -2258,7 +2257,7 @@ void restaurar() {
     }
     fclose(arch);
 
-    //Copia los datos del respalo a otro archivo nuevo y luego lo renombra
+    //Copia los datos del respaldo a otro archivo nuevo y luego lo renombra
     //Borra el archivo original si existe
     arch = fopen("proveedores respaldo.dat", "r+b");
     if (arch == NULL) {
@@ -2300,7 +2299,7 @@ void restaurar() {
     }
     fclose(arch);
 
-    //Copia los datos del respalo a otro archivo nuevo y luego lo renombra
+    //Copia los datos del respaldo a otro archivo nuevo y luego lo renombra
     //Borra el archivo original si existe
     arch = fopen("vendedores respaldo.dat", "r+b");
     if (arch == NULL) {
@@ -2342,7 +2341,7 @@ void restaurar() {
     }
     fclose(arch);
 
-    //Copia los datos del respalo a otro archivo nuevo y luego lo renombra
+    //Copia los datos del respaldo a otro archivo nuevo y luego lo renombra
     //Borra el archivo original si existe
     arch = fopen("ventas respaldo.dat", "r+b");
     if (arch == NULL) {
