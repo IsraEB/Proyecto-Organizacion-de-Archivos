@@ -1447,7 +1447,14 @@ void bajaVenta() {
         }
         else {
             band = false;
-            t->product.existencia += venta.cantidad;
+            
+			t->product.existencia += venta.cantidad;
+			if(t->product.existencia > t->product.unidadesCompradas){
+				cout << "\n\t\tEstá tratando de reembolzar más de lo que se compró" << endl;
+				band = true;
+				t->product.existencia -= venta.cantidad;
+				return;
+			}
             writeFile();
         }
     }
