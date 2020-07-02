@@ -1447,14 +1447,14 @@ void bajaVenta() {
         }
         else {
             band = false;
-            
-			t->product.existencia += venta.cantidad;
-			if(t->product.existencia > t->product.unidadesCompradas){
-				cout << "\n\t\tEstá tratando de reembolzar más de lo que se compró" << endl;
-				band = true;
-				t->product.existencia -= venta.cantidad;
-				return;
-			}
+
+            t->product.existencia += venta.cantidad;
+            if (t->product.existencia > t->product.unidadesCompradas) {
+                cout << "\n\t\tEstá tratando de reembolzar más de lo que se compró" << endl;
+                band = true;
+                t->product.existencia -= venta.cantidad;
+                return;
+            }
             writeFile();
         }
     }
@@ -1519,8 +1519,11 @@ void consultaVenta() {
  ***************************************/
 //Función que imprime el inventario
 void inventarioPantalla() {
+    double totalInvertido = 0;
+    double gananciaEsperada = 0;
+
     cout << "Inventario" << endl;
-    for (int i = 0; i < (10 + (20 * 8)); i++) {
+    for (int i = 0; i < (10 + (20 * 8) - 2); i++) {
         cout << "-";
     }
     cout << endl;
@@ -1536,7 +1539,7 @@ void inventarioPantalla() {
     cout << setw(20) << left << "Proveedor";
     cout << endl;
 
-    for (int i = 0; i < (10 + (20 * 8)); i++) {
+    for (int i = 0; i < (10 + (20 * 8) - 2); i++) {
         cout << "-";
     }
     cout << endl;
@@ -1559,6 +1562,8 @@ void inventarioPantalla() {
             cout << setw(20) << left << t->product.existencia;
             cout << setw(20) << left << t->product.unidadesCompradas;
             cout << setw(20) << left << t->product.proveedor;
+            totalInvertido += t->product.costoComprado;
+            gananciaEsperada += t->product.costoVendido;
             cout << endl;
             while (t->next != NULL) {
                 t = t->next;
@@ -1571,13 +1576,24 @@ void inventarioPantalla() {
                 cout << setw(20) << left << t->product.existencia;
                 cout << setw(20) << left << t->product.unidadesCompradas;
                 cout << setw(20) << left << t->product.proveedor;
+                totalInvertido += t->product.costoComprado;
+                gananciaEsperada += t->product.costoVendido;
                 cout << endl;
             }
         }
     }
-    for (int i = 0; i < (10 + (20 * 8)); i++) {
+    for (int i = 0; i < (10 + (20 * 8) - 2); i++) {
         cout << "-";
     }
+    cout << endl;
+    cout << "Total invertido: " << totalInvertido << endl;
+    cout << "Ganancia total esperada: " << gananciaEsperada << endl;
+    cout << "Superavit: " << gananciaEsperada - totalInvertido << endl;
+
+    for (int i = 0; i < (10 + (20 * 8) - 2); i++) {
+        cout << "-";
+    }
+
     cout << endl;
 }
 
@@ -1789,6 +1805,9 @@ void reporteDeProveedoresPantalla() {
  ***************************************/
 //Función que genera un archivo con el inventario
 void inventarioArchivo() {
+    double totalInvertido = 0;
+    double gananciaEsperada = 0;
+
     FILE *arch;
     arch = fopen("Inventario.txt", "w");
 
@@ -1814,13 +1833,23 @@ void inventarioArchivo() {
         else {
             Tlist t = hashTable[i];
             fprintf(arch, "%-10s %-20s %-20s %-20s %-20.2f %-20.2f %-20d %-20d %-20s\n", t->product.codigo, t->product.modelo, t->product.marca, t->product.color, t->product.costoVendido, t->product.costoComprado, t->product.existencia, t->product.unidadesCompradas, t->product.proveedor);
-
+            totalInvertido += t->product.costoComprado;
+            gananciaEsperada += t->product.costoVendido;
             while (t->next != NULL) {
                 t = t->next;
                 fprintf(arch, "%-10s %-20s %-20s %-20s %-20.2f %-20.2f %-20d %-20d %-20s\n", t->product.codigo, t->product.modelo, t->product.marca, t->product.color, t->product.costoVendido, t->product.costoComprado, t->product.existencia, t->product.unidadesCompradas, t->product.proveedor);
+                totalInvertido += t->product.costoComprado;
+                gananciaEsperada += t->product.costoVendido;
             }
         }
     }
+    for (int i = 0; i < (10 + (20 * 8)); i++) {
+        fprintf(arch, "-");
+    }
+    fprintf(arch, "\n");
+    fprintf(arch, "Total invertido: %f\n", totalInvertido);
+    fprintf(arch, "Ganancia total esperada: %f\n", gananciaEsperada);
+    fprintf(arch, "Superavit: %f\n", gananciaEsperada - totalInvertido);
     for (int i = 0; i < (10 + (20 * 8)); i++) {
         fprintf(arch, "-");
     }
