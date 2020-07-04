@@ -572,7 +572,7 @@ void bajaProducto(string code) {
         bool existe = false;
         Tlist t = hashTable[n];
         int i = 1;
-        if (t->next == NULL) {
+        while (t != NULL) {
             if (t->product.codigo == code) {
                 cout << "\n\t\tCódigo: " << t->product.codigo << endl;
                 cout << "\n\t\tColor: " << t->product.color << endl;
@@ -585,41 +585,18 @@ void bajaProducto(string code) {
                 cout << "\n\t\tProveedor: " << t->product.proveedor << endl;
                 cout << endl;
 
-                hashTable[n] = NULL;
+                existe = true;
+                t->next = t->next->next;
                 cout << "\n\t\tProducto eliminado." << endl;
                 writeFile();
             }
-            else {
-                cout << "\n\t\tEl producto con ese código no existe." << endl;
-            }
+            t = t->next;
+            i++;
         }
-        else {
-            while (t != NULL) {
-                if (t->next->product.codigo == code) {
-                    cout << "\n\t\tCódigo: " << t->product.codigo << endl;
-                    cout << "\n\t\tColor: " << t->product.color << endl;
-                    cout << "\n\t\tPrecio al que se compró: " << t->product.costoComprado << endl;
-                    cout << "\n\t\tPrecio al que se vende: " << t->product.costoVendido << endl;
-                    cout << "\n\t\tExistencia: " << t->product.existencia << endl;
-                    cout << "\n\t\tUnidades compradas: " << t->product.unidadesCompradas << endl;
-                    cout << "\n\t\tMarca: " << t->product.marca << endl;
-                    cout << "\n\t\tModelo: " << t->product.modelo << endl;
-                    cout << "\n\t\tProveedor: " << t->product.proveedor << endl;
-                    cout << endl;
-
-                    existe = true;
-                    t->next = t->next->next;
-                    cout << "\n\t\tProducto eliminado." << endl;
-                    writeFile();
-                }
-                t = t->next;
-                i++;
-            }
-            if (!existe) {
-                cout << "\n\t\tEl producto con ese código no existe." << endl;
-            }
-            cout << endl;
+        if (!existe) {
+            cout << "\n\t\tEl producto con ese código no existe." << endl;
         }
+        cout << endl;
     }
 }
 
@@ -2571,7 +2548,7 @@ int main() {
         cout << "\t\t [8]. Salir\n\n"
              << endl;
         cout << "\t\tPresione su opción: " << endl;
-        opcion1 = escucharTecla(8);
+        opcion1 = escucharTecla(9);
         opcion2 = 0;
         switch (opcion1) {
             case 1: {
@@ -3139,6 +3116,9 @@ int main() {
                 cout << endl;
                 escucharEspacio();
                 break;
+            }
+            case 9: {
+                printHashTable();
             }
             default: {
                 cout << "\n\t\t¡Digite una opción correcta! " << endl;
